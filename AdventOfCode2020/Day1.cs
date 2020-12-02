@@ -10,7 +10,7 @@ namespace AdventOfCode2020
     {
         public static void Run()
         {
-            Console.WriteLine("=== DAY 1 ===");
+            Console.WriteLine("=== DAY 2 ===");
             Part1().Should().BeEquivalentTo(514579, 988771);
             Part2().Should().BeEquivalentTo(241861950, 171933104);
         }

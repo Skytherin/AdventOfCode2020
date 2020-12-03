@@ -53,31 +53,29 @@ namespace AdventOfCode2020
 
         private static long RunAlgorithm1(Day3Input input, int right, int down)
         {
-            return Positions(input, right, down).Count(pos => pos.IsTree);
+            return Positions(input.Width, right, down)
+                .TakeWhile(position => input.IsPositionValid(position))
+                .Count(position => input.TreeAt(position));
         }
 
-        private static IEnumerable<Position> Positions(Day3Input input, int right, int down)
+        private static IEnumerable<Position> Positions(int width, int right, int down)
         {
-            var position = new Position(input, 0, 0);
-            while (position.Valid)
+            var position = new Position(0, 0);
+            while (true)
             {
                 yield return position;
-                position = new Position(input, (position.X + right) % input.Width, position.Y + down);
+                position = new Position((position.X + right) % width, position.Y + down);
             }
         }
     }
 
     public class Position
     {
-        private readonly Day3Input Input;
-        public bool Valid => Y < Input.Height && X < Input.Width;
         public int X { get; }
         public int Y { get; }
-        public bool IsTree => Input.Data[Y][X] == '#';
 
-        public Position(Day3Input input, int x, int y)
+        public Position(int x, int y)
         {
-            Input = input;
             X = x;
             Y = y;
         }
@@ -91,8 +89,18 @@ namespace AdventOfCode2020
             Width = Data[0].Length;
         }
 
+        public bool IsPositionValid(Position p)
+        {
+            return p.Y < Height;
+        }
+
+        public bool TreeAt(Position p)
+        {
+            return Data[p.Y][p.X] == '#';
+        }
+
         public int Width { get; }
         public int Height => Data.Length;
-        public string[] Data { get; }
+        private string[] Data { get; }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace AdventOfCode2020.Utils
 {
@@ -8,5 +9,8 @@ namespace AdventOfCode2020.Utils
         {
             return min <= self && self <= max;
         }
+
+        public static string Join(this IEnumerable<string> self, string separator) =>
+            string.Join(separator, self);
     }
 }

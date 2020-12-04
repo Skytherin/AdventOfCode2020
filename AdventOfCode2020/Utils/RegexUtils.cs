@@ -37,22 +37,7 @@ namespace AdventOfCode2020.Utils
                 var prop = properties.SingleOrDefault(p => p.Name == namedGroup);
                 if (prop == null) continue;
                 var value = match.Groups[namedGroup].Value;
-                if (prop.PropertyType == typeof(string))
-                {
-                    prop.SetValue(result, value);
-                }
-                else if (prop.PropertyType == typeof(int))
-                {
-                    prop.SetValue(result, Convert.ToInt32(value));
-                }
-                else if (prop.PropertyType == typeof(char))
-                {
-                    prop.SetValue(result, value.First());
-                }
-                else
-                {
-                    throw new NotImplementedException("");
-                }
+                prop.TypesafeSet(result, value);
                 requiredProperties.Remove(prop);
             }
 
@@ -62,6 +47,26 @@ namespace AdventOfCode2020.Utils
             }
 
             return result;
+        }
+
+        public static void TypesafeSet<T>(this PropertyInfo property, T result, string value)
+        {
+            if (property.PropertyType == typeof(string))
+            {
+                property.SetValue(result, value);
+            }
+            else if (property.PropertyType == typeof(int) || property.PropertyType == typeof(int?))
+            {
+                property.SetValue(result, Convert.ToInt32(value));
+            }
+            else if (property.PropertyType == typeof(char))
+            {
+                property.SetValue(result, value.First());
+            }
+            else
+            {
+                throw new NotImplementedException("");
+            }
         }
     }
 

@@ -74,6 +74,16 @@ namespace AdventOfCode2020.Utils
         {
             return Regex.Split(input, pattern).ToList();
         }
+
+        public static List<string> SplitOnBlankLines(this string input)
+        {
+            return RxSplit(input, @"\s*\n\s*\n\s*");
+        }
+
+        public static List<string> SplitIntoLines(this string input)
+        {
+            return input.Split("\n").Select(it => it.Trim()).ToList();
+        }
     }
 
     public class RxOptional: Attribute

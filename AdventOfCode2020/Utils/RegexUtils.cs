@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -67,6 +68,11 @@ namespace AdventOfCode2020.Utils
             {
                 throw new NotImplementedException("");
             }
+        }
+
+        public static List<string> RxSplit(this string input, string pattern)
+        {
+            return Regex.Split(input, pattern).ToList();
         }
     }
 

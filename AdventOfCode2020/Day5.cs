@@ -12,47 +12,42 @@ using AdventOfCode2020.Utils;
 
 namespace AdventOfCode2020
 {
-    public class Day5
+    public class Day6
     {
-        private static readonly HashSet<long> Input = File.ReadAllText("Inputs/Day5.txt").Split("\n")
-            .Select(it => RunAlgorithm1(it.Trim())).ToHashSet();
+        private static readonly List<List<string>> Input = File.ReadAllText("Inputs/Day6.txt")
+            .RxSplit(@"\s*\n\s*\n\s*")
+            .Select(group => group.Split("\n").Select(it=>it.Trim()).ToList())
+            .ToList();
+            
 
         public static void Run()
         {
-            RunAlgorithm1("FBFBBFFRLR").Should().Be(357);
-            RunAlgorithm1("BFFFBBFRRR").Should().Be(567);
-            RunAlgorithm1("FFFBBBFRRR").Should().Be(119);
-            RunAlgorithm1("BBFFBBFRLL").Should().Be(820);
-            Part1().Should().Be(987);
-            Part2().Should().Be(603);
+            Part1();
+            Part2();
         }
 
-        public static long Part1()
+        public static void Part1()
         {
-            return Input.Max();
-        }
-
-        public static long Part2()
-        {
-            var max = Input.Max();
-            var min = Input.Min();
-
-            for (var potential = min + 1; potential < max - 1; potential++)
-            {
-                if (!Input.Contains(potential) &&
-                    Input.Contains(potential - 1) &&
-                    Input.Contains(potential + 1))
+            Input.Sum(group => group
+                .Select(line => line.ToHashSet())
+                .Aggregate((accum, item) =>
                 {
-                    return potential;
-                }
-            }
-
-            throw new ApplicationException();
+                    accum.UnionWith(item);
+                    return accum;
+                }).Count
+            ).Should().Be(6335);
         }
 
-        private static long RunAlgorithm1(string input)
+        public static void Part2()
         {
-            return input.Aggregate(0L, (accum, value) => accum * 2 + (value == 'B' || value == 'R' ? 1 : 0));
+            Input.Sum(group => group
+                .Select(line => line.ToHashSet())
+                .Aggregate((accum, item) =>
+                {
+                    accum.IntersectWith(item);
+                    return accum;
+                }).Count
+            ).Should().Be(3392);
         }
     }
 }

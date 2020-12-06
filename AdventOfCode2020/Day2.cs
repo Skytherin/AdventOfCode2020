@@ -59,6 +59,6 @@ namespace AdventOfCode2020
         public int RangeMin { get; set; }
         public int RangeMax { get; set; }
         public char RequiredCharacter { get; set; }
-        public string Password { get; set; }
+        public string Password { get; set; } = default!;
     }
 }

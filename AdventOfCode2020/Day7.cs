@@ -8,7 +8,7 @@ namespace AdventOfCode2020
 {
     public class Day7
     {
-        private static readonly Dictionary<string, Bag> Input = ConvertToBags(File.ReadAllText("Inputs/Day7.txt"));
+        private static readonly List<Bag> Input = ConvertToBags(File.ReadAllText("Inputs/Day7.txt"));
 
         public static void Run()
         {
@@ -54,70 +54,37 @@ dark violet bags contain no other bags.")).Should().Be(126);
             RunAlgorithm2(Input).Should().Be(172246);
         }
 
-        private static int RunAlgorithm2(Dictionary<string, Bag> bagSpace)
+        private static int RunAlgorithm2(List<Bag> bagSpace)
         {
             return CountSubBags("shiny gold", bagSpace) - 1;
         }
 
-        private static int CountSubBags(string needle, Dictionary<string, Bag> bagSpace)
+        private static int CountSubBags(string needle, List<Bag> bagSpace)
         {
-            return bagSpace[needle].SubBags.Aggregate(1, (accum, item) => accum + item.Value * CountSubBags(item.Key, bagSpace));
+            var bag = bagSpace.Single(it => it.Id == needle);
+            return bag.SubBags.Aggregate(1, (accum, item) => accum + item.Value * CountSubBags(item.Key, bagSpace));
         }
 
-        private static int RunAlgorithm1(Dictionary<string, Bag> bagSpace)
+        private static int RunAlgorithm1(List<Bag> bagSpace)
         {
-            return GetAllParents("shiny gold", MapChildrenToParents(bagSpace));
-            //var needle = "shiny gold";
-            //var childrenToParents = MapChildrenToParents(bagSpace);
-
-            //var closed = new HashSet<string>();
-            //var open = new Queue<string>();
-            //open.Enqueue(needle);
-
-            //while (open.Any())
-            //{
-            //    var child = open.Dequeue();
-
-            //    if (childrenToParents.TryGetValue(child, out var parents))
-            //    {
-            //        foreach (var parent in parents)
-            //        {
-            //            open.Enqueue(parent);
-            //        }
-            //    }
-            //    if (bagSpace.ContainsKey(child))
-            //    {
-            //        closed.Add(child);
-            //    }
-            //}
-
-            //closed.Remove(needle);
-
-            //return closed.Count;
+            return GetAllParents("shiny gold", bagSpace).Count;
         }
 
-        private static Dictionary<string, List<string>> MapChildrenToParents(Dictionary<string, Bag> bagSpace)
+        private static HashSet<string> GetAllParents(string bagId, List<Bag> bagSpace)
         {
-            var result = new Dictionary<string, List<string>>();
-            foreach (var bag in bagSpace.Values)
+            var parents = bagSpace
+                .Where(bag => bag.SubBags.ContainsKey(bagId))
+                .Select(it => it.Id)
+                .ToHashSet();
+            foreach (var parentHash in parents.Select(parent => GetAllParents(parent, bagSpace)).ToList())
             {
-                foreach (var subbag in bag.SubBags)
-                {
-                    if (result.ContainsKey(subbag.Key))
-                    {
-                        result[subbag.Key].Add(bag.Id);
-                    }
-                    else
-                    {
-                        result[subbag.Key] = new List<string> {bag.Id};
-                    }
-                }
+                parents.UnionWith(parentHash);
             }
-
-            return result;
+            
+            return parents;
         }
 
-        private static Dictionary<string, Bag> ConvertToBags(string input)
+        private static List<Bag> ConvertToBags(string input)
         {
             return input
                 .SplitIntoLines()
@@ -127,19 +94,15 @@ dark violet bags contain no other bags.")).Should().Be(126);
                         RegexUtils.Deserialize<BagMatch>(line, @"^(?<Id>\w+ \w+) bags contain (?<MoreBags>.*)\.$");
                     var bag = new Bag(matched.Id);
 
-                    if (matched.MoreBags == "no other bags") return bag;
-                    var subbags = matched.MoreBags
-                        .Split(",")
-                        .Select(it =>
-                            RegexUtils.Deserialize<MoreBagsMatch>(it.Trim(), @"(?<Count>\d+) (?<Id>\w+ \w+) bag(s?)"));
-                    foreach (var subbag in subbags)
+                    foreach (var subbag in RegexUtils.DeserializeMany<MoreBagsMatch>(matched.MoreBags,
+                        @"(?<Count>\d+) (?<Id>\w+ \w+) bag"))
                     {
                         bag.Add(subbag.Id, subbag.Count);
                     }
 
                     return bag;
                 })
-                .ToDictionary(it => it.Id, it => it);
+                .ToList();
         }
     }
 

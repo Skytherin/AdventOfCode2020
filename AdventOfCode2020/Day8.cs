@@ -24,23 +24,82 @@ acc +6");
         public static void Run()
         {
             Part1();
-            Part2();
+            Part2ByBruteForce();
+            Part2ByAnalysis();
         }
 
         public static void Part1()
         {
-            new VirtualMachine(Sample).Run().Should().Be(5);
+            Machine.Run(Sample).Accumulator.Should().Be(5);
 
-            new VirtualMachine(Input).Run().Should().Be(1709);
+            Machine.Run(Input).Accumulator.Should().Be(1709);
         }
 
-        public static void Part2()
+        public static void Part2ByBruteForce()
         {
-            Repair(Sample).Should().Be(8);
-            Repair(Input).Should().Be(1976);
+            RepairByBruteForce(Sample.ToArray()).Should().Be(8);
+            RepairByBruteForce(Input.ToArray()).Should().Be(1976);
         }
 
-        public static long Repair(Instruction[] input)
+        public static void Part2ByAnalysis()
+        {
+            RepairByAnalysis(Sample).Should().Be(8);
+            RepairByAnalysis(Input).Should().Be(1976);
+        }
+
+        private static long RepairByAnalysis(Instruction[] instructions)
+        {
+            var markup = CreateMarkup(instructions);
+
+            // Now walk forward, seeing if we can reach a "can reach end" node if we switch operations
+            var current = markup[0];
+            var seen = new HashSet<Markup>();
+            while (current is InstructionMarkup c)
+            {
+                if (seen.Contains(current)) throw new ApplicationException();
+                seen.Add(current);
+                if (c.SwappedNext()?.CanReachEnd ?? false)
+                {
+                    var copy = instructions.ToArray();
+                    copy[c.Index] = new Instruction
+                    {
+                        Argument = c.Instruction.Argument,
+                        Operation = c.Instruction.Operation == "jmp" ? "nop" : "jmp"
+                    };
+                    return Machine.Run(copy).Accumulator;
+                }
+
+                current = current.Next();
+            }
+            throw new ApplicationException();
+        }
+
+        public static Markup[] CreateMarkup(Instruction[] instructions)
+        {
+            var markup = instructions.Select((instruction, index) => new InstructionMarkup(index, instruction) as Markup)
+                .Append(new SentinelMarkup())
+                .ToArray();
+
+            // Set parents
+            foreach (var item in markup.OfType<InstructionMarkup>())
+            {
+                item.SetNext(markup);
+            }
+
+            // Walk backwards, marking nodes that can reach the end
+            var open = new Queue<Markup>();
+            open.Enqueue(markup.Last());
+            while (open.Any())
+            {
+                var current = open.Dequeue();
+                current.CanReachEnd = true;
+                open.EnqueueAll(current.Parents);
+            }
+
+            return markup;
+        }
+
+        public static long RepairByBruteForce(Instruction[] input)
         {
             for (var repairIndex = 0; repairIndex < input.Length; ++repairIndex)
             {
@@ -54,9 +113,9 @@ acc +6");
                     input[repairIndex] = new Instruction { Argument = oldInstruction.Argument, Operation = "nop" };
                 }
                 else continue;
-                var vm = new VirtualMachine(input);
-                vm.Run();
-                if (vm.TerminatedNormally)
+
+                var vm = Machine.Run(input);
+                if (vm.Termination == MachineTerminationType.Normal)
                 {
                     return vm.Accumulator;
                 }
@@ -78,45 +137,129 @@ acc +6");
         public int Argument { get; set; }
     }
 
-    public class VirtualMachine
+    public abstract class Markup
     {
-        private readonly Instruction[] RAM;
-        private int PC = 0;
-        public long Accumulator = 0;
-        public bool TerminatedNormally = false;
+        public List<InstructionMarkup> Parents { get; } = new List<InstructionMarkup>();
+        
+        public bool CanReachEnd { get; set; }
 
-        public VirtualMachine(Instruction[] ram)
+        public abstract Markup? Next();
+    }
+
+    public class SentinelMarkup: Markup
+    {
+        public SentinelMarkup()
         {
-            RAM = ram;
+            CanReachEnd = true;
         }
 
-        public long Run()
+        public override Markup? Next()
         {
-            var seen = new HashSet<int>();
-            while (PC < RAM.Length && !seen.Contains(PC))
+            return null;
+        }
+    }
+
+    public class InstructionMarkup: Markup
+    {
+        public readonly Instruction Instruction;
+        public readonly int Index;
+        protected Markup? LinearNext;
+        protected Markup? JumpNext;
+
+        public InstructionMarkup(int index, Instruction instruction)
+        {
+            Index = index;
+            Instruction = instruction;
+        }
+
+        public void SetNext(Markup[] instructions)
+        {
+            var jumpTo = Index + Instruction.Argument;
+            if (jumpTo.IsInRange(0, instructions.Length-1))
             {
-                seen.Add(PC);
-                var instruction = RAM[PC];
+                JumpNext = instructions[jumpTo];
+            }
+
+            var linearNext = Index + 1;
+            if (linearNext.IsInRange(0, instructions.Length - 1))
+            {
+                LinearNext = instructions[linearNext];
+            }
+
+            Next()?.Parents.Add(this);
+        }
+
+        public override Markup? Next()
+        {
+            return Instruction.Operation switch
+            {
+                "jmp" => JumpNext,
+                "nop" => LinearNext,
+                _ => LinearNext
+            };
+        }
+
+        public Markup? SwappedNext()
+        {
+            return Instruction.Operation switch
+            {
+                "jmp" => LinearNext,
+                "nop" => JumpNext,
+                _ => LinearNext
+            };
+        }
+    }
+
+    public enum MachineTerminationType
+    {
+        Normal,
+        InfiniteLoopDetected
+    }
+
+    public class MachineResult
+    {
+        public MachineResult(long accumulator, MachineTerminationType termination)
+        {
+            Accumulator = accumulator;
+            Termination = termination;
+        }
+
+        public MachineTerminationType Termination { get; }
+        public long Accumulator{ get; }
+    }
+
+    public static class Machine
+    {
+        public static MachineResult Run(Instruction[] ram)
+        {
+            var pc = 0;
+            var accumulator = 0L;
+
+            var seen = new HashSet<int>();
+            while (pc < ram.Length && !seen.Contains(pc))
+            {
+                seen.Add(pc);
+                var instruction = ram[pc];
                 switch (instruction.Operation)
                 {
                     case "nop":
-                        PC += 1;
+                        pc += 1;
                         break;
                     case "acc":
-                        Accumulator += instruction.Argument;
-                        PC += 1;
+                        accumulator += instruction.Argument;
+                        pc += 1;
                         break;
                     case "jmp":
-                        PC += instruction.Argument;
+                        pc += instruction.Argument;
                         break;
                     default:
                         throw new NotImplementedException();
                 }
             }
 
-            if (PC == RAM.Length) TerminatedNormally = true;
-
-            return Accumulator;
+            return new MachineResult(accumulator, pc == ram.Length 
+                ? MachineTerminationType.Normal 
+                : MachineTerminationType.InfiniteLoopDetected);
         }
     }
 }

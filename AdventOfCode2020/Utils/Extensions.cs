@@ -12,5 +12,13 @@ namespace AdventOfCode2020.Utils
 
         public static string Join(this IEnumerable<string> self, string separator) =>
             string.Join(separator, self);
+
+        public static void EnqueueAll<T>(this Queue<T> self, IEnumerable<T> items)
+        {
+            foreach (var item in items)
+            {
+                self.Enqueue(item);
+            }
+        }
     }
 }

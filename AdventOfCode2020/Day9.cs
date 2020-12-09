@@ -88,18 +88,14 @@ namespace AdventOfCode2020
             {
                 current.Add(input[i]);
 
-                if (current.Count >= 2 && current.Sum == weakness)
-                {
-                    return current.List.Max() + current.List.Min();
-                }
-
                 while (current.Sum > weakness)
                 {
                     current.Shift();
-                    if (current.Count >= 2 && current.Sum == weakness)
-                    {
-                        return current.List.Max() + current.List.Min();
-                    }
+                }
+
+                if (current.Count >= 2 && current.Sum == weakness)
+                {
+                    return current.List.Max() + current.List.Min();
                 }
             }
             throw new ApplicationException();
@@ -107,25 +103,5 @@ namespace AdventOfCode2020
 
         private static long[] ConvertInput(string input) =>
             input.SplitIntoLines().Select(it => Convert.ToInt64(it)).ToArray();
-    }
-
-    public class SummedList
-    {
-        public long Sum { get; private set; }
-        private readonly List<long> MyList = new List<long>();
-        public IReadOnlyList<long> List => MyList;
-        public int Count => MyList.Count;
-
-        public void Add(long item)
-        {
-            Sum += item;
-            MyList.Add(item);
-        }
-
-        public void Shift()
-        {
-            var value = MyList.Shift();
-            Sum -= value;
-        }
     }
 }

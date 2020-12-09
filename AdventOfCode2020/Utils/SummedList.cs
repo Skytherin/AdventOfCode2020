@@ -5,19 +5,19 @@ namespace AdventOfCode2020.Utils
     public class SummedList
     {
         public long Sum { get; private set; }
-        private readonly List<long> MyList = new List<long>();
-        public IReadOnlyList<long> List => MyList;
-        public int Count => MyList.Count;
+        private readonly List<long> Actual = new List<long>();
+        public IReadOnlyList<long> List => Actual;
+        public int Count => Actual.Count;
 
         public void Add(long item)
         {
             Sum += item;
-            MyList.Add(item);
+            Actual.Add(item);
         }
 
         public void Shift()
         {
-            var value = MyList.Shift();
+            var value = Actual.Shift();
             Sum -= value;
         }
     }

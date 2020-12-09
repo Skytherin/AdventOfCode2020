@@ -37,14 +37,18 @@ acc +6");
 
         public static void Part2ByBruteForce()
         {
+            var now = DateTime.Now;
             RepairByBruteForce(Sample.ToArray()).Should().Be(8);
             RepairByBruteForce(Input.ToArray()).Should().Be(1976);
+            Console.WriteLine((DateTime.Now - now).TotalSeconds);
         }
 
         public static void Part2ByAnalysis()
         {
+            var now = DateTime.Now;
             RepairByAnalysis(Sample).Should().Be(8);
             RepairByAnalysis(Input).Should().Be(1976);
+            Console.WriteLine((DateTime.Now - now).TotalSeconds);
         }
 
         private static long RepairByAnalysis(Instruction[] instructions)

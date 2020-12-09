@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace AdventOfCode2020.Utils
@@ -19,6 +20,30 @@ namespace AdventOfCode2020.Utils
             {
                 self.Enqueue(item);
             }
+        }
+
+        public static void Append<TKey, TValue>(this Dictionary<TKey, List<TValue>> d, TKey key, TValue value)
+            where TKey: notnull
+        {
+            if (d.ContainsKey(key))
+            {
+                d[key].Add(value);
+            }
+            else
+            {
+                d[key] = new List<TValue> {value};
+            }
+        }
+
+        public static T Shift<T>(this List<T> self)
+        {
+            if (self.Any())
+            {
+                var result = self.First();
+                self.RemoveAt(0);
+                return result;
+            }
+            throw new ApplicationException("Attempt to shift empty list.");
         }
     }
 }

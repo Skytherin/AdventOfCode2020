@@ -12,7 +12,7 @@ using AdventOfCode2020.Utils;
 
 namespace AdventOfCode2020
 {
-    public class Day4
+    public class Day04
     {
         private static readonly List<Day4Input> SampleInput = @"ecl:gry pid:860033327 eyr:2020 hcl:#fffffd
 byr:1937 iyr:2017 cid:147 hgt:183cm

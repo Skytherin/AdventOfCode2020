@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.VisualBasic.CompilerServices;
 
 namespace AdventOfCode2020.Utils
 {
@@ -44,6 +45,20 @@ namespace AdventOfCode2020.Utils
                 return result;
             }
             throw new ApplicationException("Attempt to shift empty list.");
+        }
+
+        public static IEnumerable<TResult> Pairs<TIn, TResult>(this IEnumerable<TIn> input,
+            Func<TIn, TIn, TResult> map)
+        {
+            using var enumerator = input.GetEnumerator();
+            if (!enumerator.MoveNext()) yield break;
+            var tail = enumerator.Current;
+            while (enumerator.MoveNext())
+            {
+                var current = enumerator.Current;
+                yield return map(tail, current);
+                tail = current;
+            }
         }
     }
 }

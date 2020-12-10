@@ -6,7 +6,7 @@ using AdventOfCode2020.Utils;
 
 namespace AdventOfCode2020
 {
-    public class Day7
+    public class Day07
     {
         private static readonly List<Bag> Input = ConvertToBags(File.ReadAllText("Inputs/Day7.txt"));
 

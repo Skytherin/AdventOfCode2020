@@ -7,7 +7,7 @@ using FluentAssertions;
 
 namespace AdventOfCode2020
 {
-    public class Day2
+    public class Day02
     {
         private static List<Day2Input> SampleInput = @"1-3 a: abcde
 1-3 b: cdefg

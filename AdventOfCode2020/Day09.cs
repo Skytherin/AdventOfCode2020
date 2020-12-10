@@ -7,7 +7,7 @@ using FluentAssertions;
 
 namespace AdventOfCode2020
 {
-    public class Day9
+    public class Day09
     {
         private static readonly long[] Input = ConvertInput(File.ReadAllText("Inputs/Day9.txt"));
 
@@ -98,6 +98,7 @@ namespace AdventOfCode2020
                     return current.List.Max() + current.List.Min();
                 }
             }
+            
             throw new ApplicationException();
         }
 

@@ -7,7 +7,7 @@ using FluentAssertions;
 
 namespace AdventOfCode2020
 {
-    public class Day8
+    public class Day08
     {
         private static readonly Instruction[] Input = ConvertInput(File.ReadAllText("Inputs/Day8.txt"));
 

@@ -7,7 +7,7 @@ using AdventOfCode2020.Utils;
 
 namespace AdventOfCode2020
 {
-    public class Day3
+    public class Day03
     {
         private static readonly Day3Input SampleInput = new Day3Input(@"..##.......
 #...#...#..

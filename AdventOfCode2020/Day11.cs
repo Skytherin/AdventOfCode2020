@@ -26,7 +26,7 @@ L.LLLLL.LL");
             var dtin = DateTime.Now;
             Part1(Sample.ConwayClone()).Should().Be(37);
             Part1(Input.ConwayClone()).Should().Be(2194);
-            
+            Console.WriteLine($"{(DateTime.Now - dtin).TotalMilliseconds}");
             Part2(Sample.ConwayClone()).Should().Be(26);
             Part2(Input.ConwayClone()).Should().Be(1944);
             Console.WriteLine($"{(DateTime.Now - dtin).TotalMilliseconds}");
@@ -38,49 +38,65 @@ L.LLLLL.LL");
 
         public static long ConwayLives(char[][] conwayCells, int deathTolerance, Func<char[][], int, int, IEnumerable<Position>> neighbors)
         {
-            var current = conwayCells;
-            var next = conwayCells.ConwayClone(' ');
-            while (!current.HasStabalized(next))
+            return
+                Generate(conwayCells, deathTolerance, neighbors)
+                    .Pairs()
+                    .TakeWhile(previous => !previous.Item1.HasStabalized(previous.Item2))
+                    .Last()
+                    .Item2
+                    .SelectMany(it => it.Select(c => c))
+                    .Count(c => c.IsOccupiedSeat());
+        }
+
+        private static IEnumerable<char[][]> Generate(char[][] current, int deathTolerance,
+            Func<char[][], int, int, IEnumerable<Position>> neighbors)
+        {
+            while (true)
             {
-                var counts = current.ConwayClone(0);
-                // Visualize(current);
-                for (var row = 0; row < conwayCells.Length; ++row)
+                yield return current;
+                current = Next(current, deathTolerance, neighbors);
+            }
+        }
+
+        private static char[][] Next(char[][] current, int deathTolerance, Func<char[][], int, int, IEnumerable<Position>> neighbors)
+        {
+            var counts = current.ConwayClone(0);
+            var next = current.ConwayClone(' ');
+            // Visualize(current);
+            for (var row = 0; row < current.Length; ++row)
+            {
+                for (var col = 0; col < current[0].Length; ++col)
                 {
-                    for (var col = 0; col < conwayCells[0].Length; ++col)
+                    if (current[row][col].IsOccupiedSeat())
                     {
-                        if (current[row][col].IsOccupiedSeat())
+                        foreach (var position in neighbors(current, row, col))
                         {
-                            foreach (var position in neighbors(current, row, col))
-                            {
-                                counts[position.Y][position.X] += 1;
-                            }
+                            counts[position.Y][position.X] += 1;
                         }
                     }
                 }
-
-                for (var row = 0; row < conwayCells.Length; ++row)
-                {
-                    for (var col = 0; col < conwayCells[0].Length; ++col)
-                    {
-                        if (current[row][col].IsOccupiedSeat() && counts[row][col] >= deathTolerance)
-                        {
-                            next[row][col] = Conway.Empty;
-                        }
-                        else if (current[row][col].IsEmptySeat() && counts[row][col] == 0)
-                        {
-                            next[row][col] = Conway.Occupied;
-                        }
-                        else
-                        {
-                            next[row][col] = current[row][col];
-                        }
-                    }
-                }
-
-                (current, next) = (next, current);
             }
 
-            return conwayCells.Sum(it => it.Count(c => c.IsOccupiedSeat()));
+            for (var row = 0; row < current.Length; ++row)
+            {
+                for (var col = 0; col < current[0].Length; ++col)
+                {
+                    if (current[row][col].IsOccupiedSeat() && counts[row][col] >= deathTolerance)
+                    {
+                        next[row][col] = Conway.Empty;
+                    }
+                    else if (current[row][col].IsEmptySeat() && counts[row][col] == 0)
+                    {
+                        next[row][col] = Conway.Occupied;
+                    }
+                    else
+                    {
+                        next[row][col] = current[row][col];
+                    }
+                }
+            }
+
+            return next;
         }
 
         private static void Visualize(char[][] current)

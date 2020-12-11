@@ -47,8 +47,7 @@ namespace AdventOfCode2020.Utils
             throw new ApplicationException("Attempt to shift empty list.");
         }
 
-        public static IEnumerable<TResult> Pairs<TIn, TResult>(this IEnumerable<TIn> input,
-            Func<TIn, TIn, TResult> map)
+        public static IEnumerable<Tuple<T, T>> Pairs<T>(this IEnumerable<T> input)
         {
             using var enumerator = input.GetEnumerator();
             if (!enumerator.MoveNext()) yield break;
@@ -56,9 +55,14 @@ namespace AdventOfCode2020.Utils
             while (enumerator.MoveNext())
             {
                 var current = enumerator.Current;
-                yield return map(tail, current);
+                yield return Tuple.Create(tail, current);
                 tail = current;
             }
+        }
+
+        public static IEnumerable<TOut> Pairs<T, TOut>(this IEnumerable<T> input, Func<T, T, TOut> map)
+        {
+            return input.Pairs().Select(pair => map(pair.Item1, pair.Item2));
         }
     }
 }

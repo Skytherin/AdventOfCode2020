@@ -69,18 +69,6 @@ namespace AdventOfCode2020
         }
     }
 
-    public class Position
-    {
-        public int X { get; }
-        public int Y { get; }
-
-        public Position(int x, int y)
-        {
-            X = x;
-            Y = y;
-        }
-    }
-
     public class Day3Input
     {
         public Day3Input(string input)

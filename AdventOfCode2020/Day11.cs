@@ -36,25 +36,39 @@ L.LLLLL.LL");
 
         public static long Part2(char[][] conwayCells) => ConwayLives(conwayCells, 5, QueensNeighbors);
 
-        public static long ConwayLives(char[][] conwayCells, int deathTolerance, Func<char[][], int, int, IEnumerable<char>> neighbors)
+        public static long ConwayLives(char[][] conwayCells, int deathTolerance, Func<char[][], int, int, IEnumerable<Position>> neighbors)
         {
             var current = conwayCells;
-            var next = conwayCells.ConwayZero();
+            var next = conwayCells.ConwayClone(' ');
             while (!current.HasStabalized(next))
             {
+                var counts = current.ConwayClone(0);
                 // Visualize(current);
                 for (var row = 0; row < conwayCells.Length; ++row)
                 {
                     for (var col = 0; col < conwayCells[0].Length; ++col)
                     {
-                        var neighborCount = neighbors(current, row, col).Count(n => n == '#');
-                        if (current[row][col] == '#' && neighborCount >= deathTolerance)
+                        if (current[row][col].IsOccupiedSeat())
                         {
-                            next[row][col] = 'L';
+                            foreach (var position in neighbors(current, row, col))
+                            {
+                                counts[position.Y][position.X] += 1;
+                            }
                         }
-                        else if (current[row][col] == 'L' && neighborCount == 0)
+                    }
+                }
+
+                for (var row = 0; row < conwayCells.Length; ++row)
+                {
+                    for (var col = 0; col < conwayCells[0].Length; ++col)
+                    {
+                        if (current[row][col].IsOccupiedSeat() && counts[row][col] >= deathTolerance)
                         {
-                            next[row][col] = '#';
+                            next[row][col] = Conway.Empty;
+                        }
+                        else if (current[row][col].IsEmptySeat() && counts[row][col] == 0)
+                        {
+                            next[row][col] = Conway.Occupied;
                         }
                         else
                         {
@@ -66,7 +80,7 @@ L.LLLLL.LL");
                 (current, next) = (next, current);
             }
 
-            return conwayCells.Sum(it => it.Count(c => c == '#'));
+            return conwayCells.Sum(it => it.Count(c => c.IsOccupiedSeat()));
         }
 
         private static void Visualize(char[][] current)
@@ -79,15 +93,15 @@ L.LLLLL.LL");
             Console.WriteLine();
         }
 
-        private static IEnumerable<char> KingsNeighbors(char[][] conwayCells, int row, int col)
+        private static IEnumerable<Position> KingsNeighbors(char[][] conwayCells, int row, int col)
         {
             return Directions().SelectMany(direction => Walk(conwayCells, row, col, direction).Take(1));
         }
 
-        private static IEnumerable<char> QueensNeighbors(char[][] conwayCells, int row, int col)
+        private static IEnumerable<Position> QueensNeighbors(char[][] conwayCells, int row, int col)
         {
             return Directions().SelectMany(direction => Walk(conwayCells, row, col, direction)
-                .Where(c => c == '#' || c == 'L')
+                .Where(c => conwayCells[c.Y][c.X].IsSeat())
                 .Take(1));
         }
 
@@ -102,14 +116,14 @@ L.LLLLL.LL");
             }
         }
 
-        private static IEnumerable<char> Walk(char[][] conwayCells, int row, int col, Vector direction)
+        private static IEnumerable<Position> Walk(char[][] conwayCells, int row, int col, Vector direction)
         {
             var stepRow = row + direction.Y;
             var stepCol = col + direction.X;
             while (stepCol >= 0 && stepCol < conwayCells[0].Length && 
                    stepRow >= 0 && stepRow < conwayCells.Length)
             {
-                yield return conwayCells[stepRow][stepCol];
+                yield return new Position(stepCol, stepRow);
                 stepRow += direction.Y;
                 stepCol += direction.X;
             }
@@ -129,8 +143,11 @@ L.LLLLL.LL");
 
     }
 
-    public static class ConwayExtensions
+    public static class Conway
     {
+        public const char Occupied = '#';
+        public const char Empty = 'L';
+
         public static bool HasStabalized(this char[][] current, char[][] previous)
         {
             return current
@@ -146,12 +163,16 @@ L.LLLLL.LL");
                 .ToArray();
         }
 
-        public static char[][] ConwayZero(this char[][] current)
+        public static T[][] ConwayClone<T>(this char[][] current, T initialValues)
         {
             return current
-                .Select(it => it.Select(_ => ' ').ToArray())
+                .Select(it => it.Select(_ => initialValues).ToArray())
                 .ToArray();
         }
+
+        public static bool IsSeat(this char c) => c == Occupied || c == Empty;
+        public static bool IsOccupiedSeat(this char c) => c == Occupied;
+        public static bool IsEmptySeat(this char c) => c == Empty;
     }
 
     public class Vector

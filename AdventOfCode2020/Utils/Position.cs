@@ -10,5 +10,15 @@
             X = x;
             Y = y;
         }
+
+        public override int GetHashCode()
+        {
+            return (X << 16) + (X >> 16) + Y;
+        }
+
+        public override bool Equals(object? obj)
+        {
+            return obj is Position other && other.X == X && other.Y == Y;
+        }
     }
 }

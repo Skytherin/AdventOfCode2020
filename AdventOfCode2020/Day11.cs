@@ -36,8 +36,18 @@ L.LLLLL.LL");
 
         public static long Part2(char[][] conwayCells) => ConwayLives(conwayCells, 5, QueensNeighbors);
 
-        public static long ConwayLives(char[][] conwayCells, int deathTolerance, Func<char[][], int, int, IEnumerable<Position>> neighbors)
+        public static long ConwayLives(char[][] conwayCells, int deathTolerance, 
+            Func<char[][], int, int, IEnumerable<Position>> neighborGenerator)
         {
+            var neighbors = new Dictionary<Position, List<Position>>();
+            for(var row = 0; row < conwayCells.Length; ++row)
+            {
+                for (var col = 0; col < conwayCells[0].Length; ++col)
+                {
+                    neighbors[new Position(col, row)] = neighborGenerator(conwayCells, row, col).ToList();
+                }
+            }
+
             return
                 Generate(conwayCells, deathTolerance, neighbors)
                     .Pairs()
@@ -49,7 +59,7 @@ L.LLLLL.LL");
         }
 
         private static IEnumerable<char[][]> Generate(char[][] current, int deathTolerance,
-            Func<char[][], int, int, IEnumerable<Position>> neighbors)
+            Dictionary<Position, List<Position>> neighbors)
         {
             while (true)
             {
@@ -58,7 +68,7 @@ L.LLLLL.LL");
             }
         }
 
-        private static char[][] Next(char[][] current, int deathTolerance, Func<char[][], int, int, IEnumerable<Position>> neighbors)
+        private static char[][] Next(char[][] current, int deathTolerance, Dictionary<Position, List<Position>> neighbors)
         {
             var counts = current.ConwayClone(0);
             var next = current.ConwayClone(' ');
@@ -69,7 +79,7 @@ L.LLLLL.LL");
                 {
                     if (current[row][col].IsOccupiedSeat())
                     {
-                        foreach (var position in neighbors(current, row, col))
+                        foreach (var position in neighbors[new Position(col, row)])
                         {
                             counts[position.Y][position.X] += 1;
                         }
@@ -111,7 +121,9 @@ L.LLLLL.LL");
 
         private static IEnumerable<Position> KingsNeighbors(char[][] conwayCells, int row, int col)
         {
-            return Directions().SelectMany(direction => Walk(conwayCells, row, col, direction).Take(1));
+            return Directions().SelectMany(direction => Walk(conwayCells, row, col, direction)
+                .Take(1)
+                .Where(c => conwayCells[c.Y][c.X].IsSeat()));
         }
 
         private static IEnumerable<Position> QueensNeighbors(char[][] conwayCells, int row, int col)

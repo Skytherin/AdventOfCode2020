@@ -70,9 +70,12 @@ namespace AdventOfCode2020.Utils
             return grid[p.Y][p.X];
         }
 
-        public static void Set<T>(this T[][] grid, Position p, T value)
+        public static T2[][] GridClone<T, T2>(this T[][] current, Func<T, T2> convert)
         {
-            grid[p.Y][p.X] = value;
+            return current
+                .Select(it => it.Select(x => convert(x)).ToArray())
+                .ToArray();
         }
+
     }
 }

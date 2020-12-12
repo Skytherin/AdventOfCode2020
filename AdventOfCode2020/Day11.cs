@@ -131,14 +131,14 @@ L.LLLLL.LL");
 
         private static IEnumerable<Position> Walk<T>(T[][] grid, Position position, Vector direction)
         {
-            var stepRow = position.Y + direction.Y;
-            var stepCol = position.X + direction.X;
+            var stepRow = position.Y + direction.dY;
+            var stepCol = position.X + direction.dX;
             while (stepCol >= 0 && stepCol < grid[0].Length && 
                    stepRow >= 0 && stepRow < grid.Length)
             {
                 yield return new Position(stepCol, stepRow);
-                stepRow += direction.Y;
-                stepCol += direction.X;
+                stepRow += direction.dY;
+                stepCol += direction.dX;
             }
         }
 
@@ -166,20 +166,9 @@ L.LLLLL.LL");
 
         public static ConwayCell[][] ConwayClone(this ConwayCell[][] current)
         {
-            return current
-                .Select(it => it.Select(x => new ConwayCell
-                {
-                    Value = x.Value
-                }).ToArray())
-                .ToArray();
+            return current.GridClone(v => new ConwayCell {Value = v.Value});
         }
 
-        public static T2[][] ConwayClone<T, T2>(this T[][] current, Func<T, T2> convert)
-        {
-            return current
-                .Select(it => it.Select(x => convert(x)).ToArray())
-                .ToArray();
-        }
 
         public static bool IsSeat(this char c) => c == Occupied || c == Empty;
         public static bool IsOccupiedSeat(this char c) => c == Occupied;
@@ -191,17 +180,5 @@ L.LLLLL.LL");
         public char Value { get; set; }
         public List<ConwayCell> Neighbors = new List<ConwayCell>();
         public int NeighborCount = 0;
-    }
-
-    public class Vector
-    {
-        public int X { get; }
-        public int Y { get; }
-
-        public Vector(int x, int y)
-        {
-            X = x;
-            Y = y;
-        }
     }
 }

@@ -33,58 +33,42 @@ F11");
 
         private static long Part1(List<Instruction> instructions)
         {
-            return instructions.Aggregate(new PositionAndVector(new Position(0, 0), East),
+            return instructions.Aggregate(new {Position = new Position(0, 0), Vector = East},
                 (previous, instruction) =>
                 {
-                    switch (instruction.Action)
+                    return instruction.Action switch
                     {
-                        case 'N':
-                            return new PositionAndVector(previous.Position + North * instruction.Value, previous.Vector);
-                        case 'E':
-                            return new PositionAndVector(previous.Position + East * instruction.Value, previous.Vector);
-                        case 'S':
-                            return new PositionAndVector(previous.Position + South * instruction.Value, previous.Vector);
-                        case 'W':
-                            return new PositionAndVector(previous.Position + West * instruction.Value, previous.Vector);
-                        case 'L':
-                            return new PositionAndVector(previous.Position, RotateVector(previous.Vector, 360 - instruction.Value));
-                        case 'R':
-                            return new PositionAndVector(previous.Position, RotateVector(previous.Vector, instruction.Value));
-                        case 'F':
-                            return new PositionAndVector(previous.Position + previous.Vector * instruction.Value, previous.Vector);
-                        default:
-                            throw new ApplicationException();
-                    }
+                        'N' => new {Position = previous.Position + North * instruction.Value, previous.Vector},
+                        'E' => new {Position = previous.Position + East * instruction.Value, previous.Vector},
+                        'S' => new {Position = previous.Position + South * instruction.Value, previous.Vector},
+                        'W' => new {Position = previous.Position + West * instruction.Value, previous.Vector},
+                        'L' => new {previous.Position, Vector = RotateVector(previous.Vector, 360 - instruction.Value)},
+                        'R' => new {previous.Position, Vector = RotateVector(previous.Vector, instruction.Value)},
+                        'F' => new {Position = previous.Position + previous.Vector * instruction.Value, previous.Vector},
+                        _ => throw new ApplicationException()
+                    };
                 })
             .Position.ManhattanDistance();
         }
 
         private static long Part2(List<Instruction> instructions)
         {
-            return instructions.Aggregate(new PositionAndVector(new Position(0, 0), new Vector(10, 1)),
-                (previous, instruction) =>
-                {
-                    switch (instruction.Action)
+            return instructions.Aggregate(new { Position = new Position(0, 0), Vector = new Vector(10, 1) },
+                    (previous, instruction) =>
                     {
-                        case 'N':
-                            return new PositionAndVector(previous.Position, previous.Vector + North * instruction.Value);
-                        case 'E':
-                            return new PositionAndVector(previous.Position, previous.Vector + East * instruction.Value);
-                        case 'S':
-                            return new PositionAndVector(previous.Position, previous.Vector + South * instruction.Value);
-                        case 'W':
-                            return new PositionAndVector(previous.Position, previous.Vector + West * instruction.Value);
-                        case 'L':
-                            return new PositionAndVector(previous.Position, RotateVector(previous.Vector, 360 - instruction.Value));
-                        case 'R':
-                            return new PositionAndVector(previous.Position, RotateVector(previous.Vector, instruction.Value));
-                        case 'F':
-                            return new PositionAndVector(previous.Position + previous.Vector * instruction.Value, previous.Vector);
-                        default:
-                            throw new ApplicationException();
-                    }
-                })
-            .Position.ManhattanDistance();
+                        return instruction.Action switch
+                        {
+                            'N' => new { previous.Position, Vector = previous.Vector + North * instruction.Value },
+                            'E' => new { previous.Position, Vector = previous.Vector + East * instruction.Value },
+                            'S' => new { previous.Position, Vector = previous.Vector + South * instruction.Value },
+                            'W' => new { previous.Position, Vector = previous.Vector + West * instruction.Value },
+                            'L' => new { previous.Position, Vector = RotateVector(previous.Vector, 360 - instruction.Value) },
+                            'R' => new { previous.Position, Vector = RotateVector(previous.Vector, instruction.Value) },
+                            'F' => new { Position = previous.Position + previous.Vector * instruction.Value, previous.Vector },
+                            _ => throw new ApplicationException()
+                        };
+                    })
+                .Position.ManhattanDistance();
         }
 
 
@@ -114,18 +98,6 @@ F11");
         {
             public char Action { get; set; }
             public int Value { get; set; }
-        }
-
-        public class PositionAndVector
-        {
-            public PositionAndVector(Position position, Vector vector)
-            {
-                Position = position;
-                Vector = vector;
-            }
-
-            public Position Position { get; }
-            public Vector Vector { get; }
         }
     }
 }

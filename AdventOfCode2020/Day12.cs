@@ -53,10 +53,10 @@ F11");
                         position = position.Add(West, instruction.Value);
                         break;
                     case 'L':
-                        facing = RotateFacing(facing, 360 - instruction.Value);
+                        facing = RotateVector(facing, 360 - instruction.Value);
                         break;
                     case 'R':
-                        facing = RotateFacing(facing, instruction.Value);
+                        facing = RotateVector(facing, instruction.Value);
                         break;
                     case 'F':
                         position = position.Add(facing, instruction.Value);
@@ -108,24 +108,10 @@ F11");
         }
 
 
-        static Vector North = new Vector(0, 1);
-        static Vector South = new Vector(0, -1);
-        static Vector East = new Vector(1, 0);
-        static Vector West = new Vector(-1, 0);
-
-        public static Vector RotateFacing(Vector facing, int degreesRight)
-        {
-            var steps = degreesRight / 90;
-            while (steps-- > 0)
-            {
-                if (facing == North) facing = East;
-                else if (facing == East) facing = South;
-                else if (facing == South) facing = West;
-                else if (facing == West) facing = North;
-            }
-
-            return facing;
-        }
+        static readonly Vector North = new Vector(0, 1);
+        static readonly Vector East = new Vector(1, 0);
+        static readonly Vector South = new Vector(0, -1);
+        static readonly Vector West = new Vector(-1, 0);
 
         public static Vector RotateVector(Vector vector, int degreesRight)
         {

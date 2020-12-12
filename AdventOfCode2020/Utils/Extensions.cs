@@ -76,6 +76,5 @@ namespace AdventOfCode2020.Utils
                 .Select(it => it.Select(x => convert(x)).ToArray())
                 .ToArray();
         }
-
     }
 }

@@ -11,10 +11,14 @@
             dY = dy;
         }
 
-        public Vector Add(Vector vector, int magnitude)
+        public static Vector operator+(Vector a, Vector b)
         {
-            return new Vector(dX + vector.dX * magnitude, dY + vector.dY * magnitude);
+            return new Vector(a.dX + b.dX, a.dY + b.dY);
         }
 
+        public static Vector operator*(Vector a, int magnitude)
+        {
+            return new Vector(a.dX * magnitude, a.dY * magnitude);
+        }
     }
 }

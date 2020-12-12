@@ -131,14 +131,12 @@ L.LLLLL.LL");
 
         private static IEnumerable<Position> Walk<T>(T[][] grid, Position position, Vector direction)
         {
-            var stepRow = position.Y + direction.dY;
-            var stepCol = position.X + direction.dX;
-            while (stepCol >= 0 && stepCol < grid[0].Length && 
-                   stepRow >= 0 && stepRow < grid.Length)
+            position += direction;
+            while (position.X >= 0 && position.X < grid[0].Length && 
+                   position.Y >= 0 && position.Y < grid.Length)
             {
-                yield return new Position(stepCol, stepRow);
-                stepRow += direction.dY;
-                stepCol += direction.dX;
+                yield return position;
+                position += direction;
             }
         }
 

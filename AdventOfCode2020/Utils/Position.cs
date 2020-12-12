@@ -23,9 +23,9 @@ namespace AdventOfCode2020.Utils
             return obj is Position other && other.X == X && other.Y == Y;
         }
 
-        public Position Add(Vector vector, int magnitude)
+        public static Position operator +(Position p, Vector vector)
         {
-            return new Position(X + vector.dX * magnitude, Y + vector.dY * magnitude);
+            return new Position(p.X + vector.dX, p.Y + vector.dY);
         }
 
         public long ManhattanDistance()

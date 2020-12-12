@@ -9,8 +9,8 @@ namespace AdventOfCode2020
 {
     public static class Day11
     {
-        private static readonly char[][] Input = ConvertInput(File.ReadAllText("Inputs/Day11.txt"));
-        private static readonly char[][] Sample = ConvertInput(@"L.LL.LL.LL
+        private static readonly ConwayCell[][] Input = ConvertInput(File.ReadAllText("Inputs/Day11.txt"));
+        private static readonly ConwayCell[][] Sample = ConvertInput(@"L.LL.LL.LL
 LLLLLLL.LL
 L.L.L..L..
 LLLL.LL.LL
@@ -32,81 +32,66 @@ L.LLLLL.LL");
             Console.WriteLine($"{(DateTime.Now - dtin).TotalMilliseconds}");
         }
 
-        public static long Part1(char[][] conwayCells) => ConwayLives(conwayCells, 4, KingsNeighbors);
+        public static long Part1(ConwayCell[][] conwayCells) => ConwayLives(conwayCells, 4, KingsNeighbors);
 
-        public static long Part2(char[][] conwayCells) => ConwayLives(conwayCells, 5, QueensNeighbors);
+        public static long Part2(ConwayCell[][] conwayCells) => ConwayLives(conwayCells, 5, QueensNeighbors);
 
-        public static long ConwayLives(char[][] conwayCells, int deathTolerance, 
-            Func<char[][], int, int, IEnumerable<Position>> neighborGenerator)
+        public static long ConwayLives(ConwayCell[][] grid, int deathTolerance, 
+            Func<ConwayCell[][], Position, IEnumerable<Position>> neighborGenerator)
         {
-            var neighbors = new Dictionary<Position, List<Position>>();
-            for(var row = 0; row < conwayCells.Length; ++row)
+            var seatsPositions = grid
+                .SelectMany((row, y) => row
+                    .Select((col, x) => new {x,y,col})
+                    .Where(value => value.col.Value.IsSeat())
+                    .Select(it => new Position(it.x, it.y)))
+                .ToList();
+
+            foreach (var position in seatsPositions)
             {
-                for (var col = 0; col < conwayCells[0].Length; ++col)
-                {
-                    neighbors[new Position(col, row)] = neighborGenerator(conwayCells, row, col).ToList();
-                }
+                grid.At(position).Neighbors = neighborGenerator(grid, position).Select(nb => grid.At(nb)).ToList();
             }
 
-            return
-                Generate(conwayCells, deathTolerance, neighbors)
-                    .Pairs()
-                    .TakeWhile(previous => !previous.Item1.HasStabalized(previous.Item2))
-                    .Last()
-                    .Item2
-                    .SelectMany(it => it.Select(c => c))
-                    .Count(c => c.IsOccupiedSeat());
+            var seats = seatsPositions.Select(pos => grid.At(pos)).ToList();
+
+            while (Next(deathTolerance, seats))
+            {
+                // Do nothing
+            }
+
+            return seats.Count(seat => seat.Value.IsOccupiedSeat());
         }
 
-        private static IEnumerable<char[][]> Generate(char[][] current, int deathTolerance,
-            Dictionary<Position, List<Position>> neighbors)
+        private static bool Next(int deathTolerance, List<ConwayCell> seats)
         {
-            while (true)
-            {
-                yield return current;
-                current = Next(current, deathTolerance, neighbors);
-            }
-        }
+            seats.ForEach(seat => seat.NeighborCount = 0);
 
-        private static char[][] Next(char[][] current, int deathTolerance, Dictionary<Position, List<Position>> neighbors)
-        {
-            var counts = current.ConwayClone(0);
-            var next = current.ConwayClone(' ');
-            // Visualize(current);
-            for (var row = 0; row < current.Length; ++row)
+            foreach (var seat in seats.Where(seat => seat.Value.IsOccupiedSeat()))
             {
-                for (var col = 0; col < current[0].Length; ++col)
+                foreach (var neighbor in seat.Neighbors)
                 {
-                    if (current[row][col].IsOccupiedSeat())
-                    {
-                        foreach (var position in neighbors[new Position(col, row)])
-                        {
-                            counts[position.Y][position.X] += 1;
-                        }
-                    }
+                    neighbor.NeighborCount += 1;
                 }
             }
 
-            for (var row = 0; row < current.Length; ++row)
+            var changed = false;
+            foreach (var seat in seats)
             {
-                for (var col = 0; col < current[0].Length; ++col)
+                if (seat.Value.IsOccupiedSeat())
                 {
-                    if (current[row][col].IsOccupiedSeat() && counts[row][col] >= deathTolerance)
+                    if (seat.NeighborCount >= deathTolerance)
                     {
-                        next[row][col] = Conway.Empty;
+                        changed = true;
+                        seat.Value = Conway.Empty;
                     }
-                    else if (current[row][col].IsEmptySeat() && counts[row][col] == 0)
-                    {
-                        next[row][col] = Conway.Occupied;
-                    }
-                    else
-                    {
-                        next[row][col] = current[row][col];
-                    }
+                }
+                else if (seat.NeighborCount == 0)
+                {
+                    changed = true;
+                    seat.Value = Conway.Occupied;
                 }
             }
 
-            return next;
+            return changed;
         }
 
         private static void Visualize(char[][] current)
@@ -119,17 +104,17 @@ L.LLLLL.LL");
             Console.WriteLine();
         }
 
-        private static IEnumerable<Position> KingsNeighbors(char[][] conwayCells, int row, int col)
+        private static IEnumerable<Position> KingsNeighbors(ConwayCell[][] grid, Position position)
         {
-            return Directions().SelectMany(direction => Walk(conwayCells, row, col, direction)
+            return Directions().SelectMany(direction => Walk(grid, position, direction)
                 .Take(1)
-                .Where(c => conwayCells[c.Y][c.X].IsSeat()));
+                .Where(c => grid.At(c).Value.IsSeat()));
         }
 
-        private static IEnumerable<Position> QueensNeighbors(char[][] conwayCells, int row, int col)
+        private static IEnumerable<Position> QueensNeighbors(ConwayCell[][] grid, Position position)
         {
-            return Directions().SelectMany(direction => Walk(conwayCells, row, col, direction)
-                .Where(c => conwayCells[c.Y][c.X].IsSeat())
+            return Directions().SelectMany(direction => Walk(grid, position, direction)
+                .Where(c => grid.At(c).Value.IsSeat())
                 .Take(1));
         }
 
@@ -144,12 +129,12 @@ L.LLLLL.LL");
             }
         }
 
-        private static IEnumerable<Position> Walk(char[][] conwayCells, int row, int col, Vector direction)
+        private static IEnumerable<Position> Walk<T>(T[][] grid, Position position, Vector direction)
         {
-            var stepRow = row + direction.Y;
-            var stepCol = col + direction.X;
-            while (stepCol >= 0 && stepCol < conwayCells[0].Length && 
-                   stepRow >= 0 && stepRow < conwayCells.Length)
+            var stepRow = position.Y + direction.Y;
+            var stepCol = position.X + direction.X;
+            while (stepCol >= 0 && stepCol < grid[0].Length && 
+                   stepRow >= 0 && stepRow < grid.Length)
             {
                 yield return new Position(stepCol, stepRow);
                 stepRow += direction.Y;
@@ -157,10 +142,13 @@ L.LLLLL.LL");
             }
         }
 
-        private static char[][] ConvertInput(string input)
+        private static ConwayCell[][] ConvertInput(string input)
         {
             var result = input.SplitIntoLines()
-                .Select(it => it.Select(c => c).ToArray())
+                .Select(it => it.Select(c => new ConwayCell
+                {
+                    Value = c
+                }).ToArray())
                 .ToArray();
 
             // Sanity check all rows have same length
@@ -176,31 +164,33 @@ L.LLLLL.LL");
         public const char Occupied = '#';
         public const char Empty = 'L';
 
-        public static bool HasStabalized(this char[][] current, char[][] previous)
+        public static ConwayCell[][] ConwayClone(this ConwayCell[][] current)
         {
             return current
-                .SelectMany(it => it)
-                .Zip(previous.SelectMany(it => it), (c, c1) => new {c, c1})
-                .All(c => c.c == c.c1);
-        }
-
-        public static char[][] ConwayClone(this char[][] current)
-        {
-            return current
-                .Select(it => it.ToArray())
+                .Select(it => it.Select(x => new ConwayCell
+                {
+                    Value = x.Value
+                }).ToArray())
                 .ToArray();
         }
 
-        public static T[][] ConwayClone<T>(this char[][] current, T initialValues)
+        public static T2[][] ConwayClone<T, T2>(this T[][] current, Func<T, T2> convert)
         {
             return current
-                .Select(it => it.Select(_ => initialValues).ToArray())
+                .Select(it => it.Select(x => convert(x)).ToArray())
                 .ToArray();
         }
 
         public static bool IsSeat(this char c) => c == Occupied || c == Empty;
         public static bool IsOccupiedSeat(this char c) => c == Occupied;
         public static bool IsEmptySeat(this char c) => c == Empty;
+    }
+
+    public class ConwayCell
+    {
+        public char Value { get; set; }
+        public List<ConwayCell> Neighbors = new List<ConwayCell>();
+        public int NeighborCount = 0;
     }
 
     public class Vector

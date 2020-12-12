@@ -64,5 +64,15 @@ namespace AdventOfCode2020.Utils
         {
             return input.Pairs().Select(pair => map(pair.Item1, pair.Item2));
         }
+
+        public static T At<T>(this T[][] grid, Position p)
+        {
+            return grid[p.Y][p.X];
+        }
+
+        public static void Set<T>(this T[][] grid, Position p, T value)
+        {
+            grid[p.Y][p.X] = value;
+        }
     }
 }

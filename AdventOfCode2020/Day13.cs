@@ -59,38 +59,27 @@ namespace AdventOfCode2020
 
         private static long Part2ByCRT(params long[] buses)
         {
-            var congruences = buses
+            return buses
                 .Select((busId, index) => (modulo: busId, remainder: busId - index))
                 .Where(congruence => congruence.modulo != -1)
                 .OrderByDescending(congruence => congruence.remainder)
-                .ToList();
-
-            var solution = new CongruenceSolution
-            {
-                K1 = congruences.First().modulo,
-                K0 = congruences.First().remainder
-            };
-
-            solution = congruences.Skip(1).Aggregate(solution, (previous, current) => SolveCongruence(previous, current));
-            return solution.K0;
+                .Aggregate((previous, current) => SolveCongruence(previous, current))
+                .remainder;
         }
 
-        private static CongruenceSolution SolveCongruence(CongruenceSolution previousSolution,
+        private static (long modulo, long remainder) SolveCongruence((long modulo, long remainder) previousCongruence,
             (long modulo, long remainder) congruence)
         {
             var (modulo, remainder) = congruence;
 
-            remainder = (remainder - previousSolution.K0).Mod(modulo);
+            remainder = (remainder - previousCongruence.remainder).Mod(modulo);
 
-            var mi = MultiplicativeInverse(previousSolution.K1, modulo);
+            var mi = MultiplicativeInverse(previousCongruence.modulo, modulo);
             
             remainder = (remainder * mi) % modulo;
 
-            return new CongruenceSolution
-            {
-                K1 = previousSolution.K1 * modulo,
-                K0 = previousSolution.K1 * remainder + previousSolution.K0
-            };
+            return (modulo: previousCongruence.modulo * modulo,
+                remainder: previousCongruence.modulo * remainder + previousCongruence.remainder);
         }
 
         private static long MultiplicativeInverse(long a, long b)
@@ -98,12 +87,6 @@ namespace AdventOfCode2020
             var n = 1;
             while ((a * n) % b != 1) ++n;
             return n;
-        }
-
-        class CongruenceSolution
-        {
-            public long K1 { get; set; }
-            public long K0 { get; set; }
         }
     }
 }

@@ -76,5 +76,7 @@ namespace AdventOfCode2020.Utils
                 .Select(it => it.Select(x => convert(x)).ToArray())
                 .ToArray();
         }
+
+        public static bool IsMultipleOf(this long product, long value) => (product % value) == 0;
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using AdventOfCode2020.Utils;
 using FluentAssertions;
@@ -41,14 +42,11 @@ namespace AdventOfCode2020
                 .Select((id, index) => new { id, index })
                 .Where(bus => bus.id != -1)
                 .Skip(1)
-                .Aggregate(new { value = buses[0], increment = buses[0] }, (state, bus) => {
-                    return new { 
-                        value = Produce.Forever(state.value, previous => previous + state.increment)
-                            .SkipWhile(current => !(current + bus.index).IsMultipleOf(bus.id))
-                            .First(),
-                        increment = state.increment * bus.id 
-                    };
-                 })
+                .Aggregate((value: buses[0], increment: buses[0]), (state, bus) => (
+                    value: Produce.Forever(state.value, current => current + state.increment)
+                        .First(current => (current + bus.index).IsMultipleOf(bus.id)),
+                    increment: state.increment * bus.id
+                ))
                 .value;
         }
     }

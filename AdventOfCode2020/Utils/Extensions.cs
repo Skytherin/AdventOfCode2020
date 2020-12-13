@@ -78,5 +78,12 @@ namespace AdventOfCode2020.Utils
         }
 
         public static bool IsMultipleOf(this long product, long value) => (product % value) == 0;
+
+        public static long Mod(this long k, long n)
+        {
+            var result = k % n;
+            if (result < 0) return n + result;
+            return result;
+        }
     }
 }

@@ -12,8 +12,8 @@ namespace AdventOfCode2020.Utils
             return min <= self && self <= max;
         }
 
-        public static string Join(this IEnumerable<string> self, string separator) =>
-            string.Join(separator, self);
+        public static string Join<T>(this IEnumerable<T> self, string separator) =>
+            string.Join(separator, self.Select(it => it?.ToString()));
 
         public static void EnqueueAll<T>(this Queue<T> self, IEnumerable<T> items)
         {
@@ -84,6 +84,25 @@ namespace AdventOfCode2020.Utils
             var result = k % n;
             if (result < 0) return n + result;
             return result;
+        }
+
+        public static string Right(this string s, int count)
+        {
+            if (s.Length < count) return s;
+            return s.Substring(s.Length - count, count);
+        }
+
+        public static (T first, IEnumerable<T> rest) FirstAndRest<T>(this IEnumerable<T> self)
+        {
+            using var enumerator = self.GetEnumerator();
+            if (!enumerator.MoveNext()) throw new ApplicationException();
+            var first = enumerator.Current;
+            return (first, rest: enumerator.Enumerate());
+        }
+
+        public static IEnumerable<T> Enumerate<T>(this IEnumerator<T> self)
+        {
+            while (self.MoveNext()) yield return self.Current;
         }
     }
 }

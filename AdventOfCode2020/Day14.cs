@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using System.Linq;
 using AdventOfCode2020.Utils;
@@ -27,8 +28,8 @@ mem[26] = 1");
 
             timer.Lap();
 
-            //Part2(Sample).Should().Be(286);
-            //Part2(Input).Should().Be(46530);
+            Part2(Sample2).Should().Be(208);
+            Part2(Input).Should().Be(3801988250775L);
 
             timer.Lap();
             timer.Total();
@@ -73,7 +74,25 @@ mem[26] = 1");
 
         private static long Part2(List<Day14Input> instructions)
         {
-            return 0;
+            var d = new FloatingDictionary();
+            var currentMask = "";
+            foreach (var instruction in instructions)
+            {
+                if (!string.IsNullOrWhiteSpace(instruction.Mask))
+                {
+                    currentMask = instruction.Mask;
+                }
+                else if (instruction.MemAddress is { } memAddress && instruction.MemValue is { } memValue)
+                {
+                    d.Add(memAddress, currentMask, memValue);
+                }
+                else
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            return d.Sum();
         }
 
         private static List<Day14Input> ConvertInput(string input)
@@ -88,6 +107,138 @@ mem[26] = 1");
             public string? Mask { get; set; }
             public int? MemAddress { get; set; }
             public long? MemValue { get; set; }
+        }
+    }
+
+    public class FloatingDictionary
+    {
+        private readonly Dictionary<string, long> Actual = new Dictionary<string, long>();
+
+        public void Add(long address, string mask, long value)
+        {
+            var keyArray = (Enumerable.Repeat("0", 64).Join("") + Convert.ToString(address, 2)).Right(64).Reverse()
+                .ToArray();
+            foreach (var (c, index) in mask.Reverse().Select((c, index) => (c, index)))
+            {
+                if (c == '0') continue;
+                if (c == '1') keyArray[index] = '1';
+                else if (c == 'X') keyArray[index] = 'X';
+                else throw new ApplicationException();
+            }
+
+            var key = keyArray.Join("");
+            key.Length.Should().Be(64);
+
+            SplitOverlappedKeys(key);
+            RemoveSubsumedKeys(key);
+
+            Actual.Add(key, value);
+        }
+
+        public long Sum()
+        {
+            return Actual.Sum(kv => kv.Value * Pow2(kv.Key.Count(c => c == 'X')));
+        }
+
+        private static long Pow2(int n)
+        {
+            return Enumerable.Repeat(2, n).Aggregate(1, (prev, current) => prev * current);
+        }
+
+        private void RemoveSubsumedKeys(string key)
+        {
+            var removedKeys = Actual.Keys.Where(needle => Subsumed(needle, key)).ToList();
+            foreach (var removedKey in removedKeys)
+            {
+                Actual.Remove(removedKey);
+            }
+        }
+
+        private bool Subsumed(string existingKey, string newKey)
+        {
+            var subsumed = false;
+            foreach (var (n, k) in existingKey.Zip(newKey))
+            {
+                if (k == 'X')
+                {
+                    subsumed = true;
+                }
+                else if (n != k)
+                {
+                    return false;
+                }
+            }
+
+            return subsumed;
+        }
+
+        private void SplitOverlappedKeys(string newKey)
+        {
+            var repeat = true;
+            while (repeat)
+            {
+                repeat = false;
+                foreach (var key in Actual.Keys.ToList())
+                {
+                    // skip this key if it's non-X's dont match new non-Xs
+                    if (!SplitKey(key, newKey))
+                    {
+                        continue;
+                    }
+                    repeat = true;
+                }
+            }
+        }
+
+        private bool SplitKey(string existingKey, string newKey)
+        {
+            // Split existing keys when the existing key has an X
+            // where the newKey has a 1 or 0
+            var splitLocations = new List<int>();
+            for (var i =0; i < existingKey.Length; ++i)
+            {
+                var n = newKey[i];
+                var e = existingKey[i];
+                if (n == 'X') continue;
+                if (e == 'X')
+                {
+                    splitLocations.Add(i);
+                }
+                else if (e != n)
+                {
+                    return false;
+                }
+            }
+
+            if (splitLocations.Count == 0) return false;
+            var splits = CreateSplits(existingKey, 0, splitLocations);
+            foreach (var split in splits)
+            {
+                Actual[split] = Actual[existingKey];
+            }
+
+            Actual.Remove(existingKey);
+            return true;
+        }
+
+        private IEnumerable<string> CreateSplits(string existingKey, int offset, List<int> splitLocations)
+        {
+            if (splitLocations.Count == 0)
+            {
+                yield return existingKey.Substring(offset);
+                yield break;
+            }
+
+            var location = splitLocations.First();
+            var first = existingKey.Substring(offset, location - offset);
+            var remainders = CreateSplits(existingKey, 
+                location + 1,
+                splitLocations.Skip(1).ToList());
+            foreach (var remainder in remainders)
+            {
+                yield return first + '0' + remainder;
+                yield return first + '1' + remainder;
+            }
         }
     }
 }

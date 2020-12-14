@@ -26,9 +26,21 @@ namespace AdventOfCode2020.Utils
             {
                 property.SetValue(result, value);
             }
-            else if (property.PropertyType == typeof(int) || property.PropertyType == typeof(int?))
+            else if (property.PropertyType == typeof(int?))
+            {
+                if (!string.IsNullOrWhiteSpace(value)) property.SetValue(result, Convert.ToInt32(value));
+            }
+            else if (property.PropertyType == typeof(int))
             {
                 property.SetValue(result, Convert.ToInt32(value));
+            }
+            else if (property.PropertyType == typeof(long?))
+            {
+                if (!string.IsNullOrWhiteSpace(value)) property.SetValue(result, Convert.ToInt64(value));
+            }
+            else if (property.PropertyType == typeof(long))
+            {
+                property.SetValue(result, Convert.ToInt64(value));
             }
             else if (property.PropertyType == typeof(char))
             {

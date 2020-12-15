@@ -42,27 +42,28 @@ namespace AdventOfCode2020
         private static long Algorithm(long sentinel, params long[] instructions)
         {
             var turn = 1;
-            var numbers = new Dictionary<long, (long penultimateSpoken, long lastSpoken)>();
+            var numbers = new Dictionary<long, long>();
             
             foreach (var i in instructions)
             {
-                numbers[i] = (turn, turn);
+                numbers[i] = turn;
                 turn++;
             }
 
-            var lastSpoken = instructions.Last();
-            var lastSpokenKey = numbers[lastSpoken];
+            var lastSpokenNumber = instructions.Last();
+            var penultimateSpokenTurn = numbers[lastSpokenNumber];
             for ( ; turn <= sentinel; turn++)
             {
-                lastSpoken = lastSpokenKey.lastSpoken - lastSpokenKey.penultimateSpoken;
+                lastSpokenNumber = turn - penultimateSpokenTurn - 1;
 
-                lastSpokenKey = numbers.TryGetValue(lastSpoken, out var temp) 
-                    ? (temp.lastSpoken, turn) 
-                    : (turn, turn);
-                numbers[lastSpoken] = lastSpokenKey;
+                penultimateSpokenTurn = numbers.TryGetValue(lastSpokenNumber, out var temp)
+                    ? temp
+                    : turn;
+
+                numbers[lastSpokenNumber] = turn;
             }
 
-            return lastSpoken;
+            return lastSpokenNumber;
         }
     }
 

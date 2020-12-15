@@ -39,10 +39,10 @@ namespace AdventOfCode2020
             return Algorithm(30000000, instructions);
         }
 
-        private static long Algorithm(long sentinel, params long[] instructions)
+        private static long Algorithm(int sentinel, params long[] instructions)
         {
             var turn = 1;
-            var numbers = new Dictionary<long, long>();
+            var numbers = new int[sentinel];
             
             foreach (var i in instructions)
             {
@@ -56,9 +56,8 @@ namespace AdventOfCode2020
             {
                 lastSpokenNumber = turn - penultimateSpokenTurn - 1;
 
-                penultimateSpokenTurn = numbers.TryGetValue(lastSpokenNumber, out var temp)
-                    ? temp
-                    : turn;
+                penultimateSpokenTurn = numbers[lastSpokenNumber];
+                if (penultimateSpokenTurn == 0) penultimateSpokenTurn = turn;
 
                 numbers[lastSpokenNumber] = turn;
             }

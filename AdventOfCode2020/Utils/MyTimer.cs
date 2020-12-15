@@ -1,22 +1,23 @@
 ﻿using System;
-using System.Security.Cryptography;
+using System.Diagnostics;
 
 namespace AdventOfCode2020.Utils
 {
     public class MyTimer
     {
-        private DateTime In = DateTime.Now;
-        private DateTime LapDate = DateTime.Now;
+        private readonly Stopwatch Stopwatch = Stopwatch.StartNew();
+        private TimeSpan LastLap = TimeSpan.Zero;
 
         public void Lap()
         {
-            Console.WriteLine($"{(DateTime.Now - LapDate).TotalSeconds}");
-            LapDate = DateTime.Now;
+            var elapsed = Stopwatch.Elapsed;
+            Console.WriteLine($"{(elapsed - LastLap).TotalSeconds}");
+            LastLap = elapsed;
         }
 
         public void Total()
         {
-            Console.WriteLine($"{(DateTime.Now - In).TotalSeconds}");
+            Console.WriteLine($"{Stopwatch.Elapsed.TotalSeconds}");
         }
     }
 }

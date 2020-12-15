@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.IO;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Transactions;
 using AdventOfCode2020.Utils;
 using FluentAssertions;
 
@@ -28,9 +24,6 @@ namespace AdventOfCode2020
             Part2(0, 3, 6).Should().Be(175594);
             timer.Lap();
             Part2(9, 3, 1, 0, 8, 4).Should().Be(352);
-
-            //Part2(Sample2).Should().Be(208);
-            //Part2(Input).Should().Be(3801988250775L);
 
             timer.Lap();
             timer.Total();
@@ -59,23 +52,14 @@ namespace AdventOfCode2020
 
             var lastSpoken = instructions.Last();
             var lastSpokenKey = numbers[lastSpoken];
-
             for ( ; turn <= sentinel; turn++)
             {
-                var (penultimateSpoken, lastTurnSpoken) =
-                    numbers.ContainsKey(lastSpoken)
-                        ? numbers[lastSpoken]
-                        : (turn - 1, turn - 1);
-                lastSpoken = lastTurnSpoken - penultimateSpoken;
+                lastSpoken = lastSpokenKey.lastSpoken - lastSpokenKey.penultimateSpoken;
 
-                if (numbers.TryGetValue(lastSpoken, out var temp))
-                {
-                    numbers[lastSpoken] = (temp.lastSpoken, turn);
-                }
-                else
-                {
-                    numbers[lastSpoken] = (turn, turn);
-                }
+                lastSpokenKey = numbers.TryGetValue(lastSpoken, out var temp) 
+                    ? (temp.lastSpoken, turn) 
+                    : (turn, turn);
+                numbers[lastSpoken] = lastSpokenKey;
             }
 
             return lastSpoken;

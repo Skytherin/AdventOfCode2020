@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using AdventOfCode2020.Utils;
 using FluentAssertions;
 
@@ -65,5 +64,4 @@ namespace AdventOfCode2020
             return lastSpokenNumber;
         }
     }
-
 }

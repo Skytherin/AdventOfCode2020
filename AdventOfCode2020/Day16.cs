@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.IO;
 using System.Linq;
 using AdventOfCode2020.Utils;
@@ -85,40 +84,39 @@ nearby tickets:
             var rotated = tickets
                 .SelectMany(ticket => ticket.Select((it,index)=>(it,index)))
                 .GroupBy(it => it.index)
-                .ToDictionary(it => it.Key, it => it.Select(z => z.it));
+                .Select(it => it.Select(z => z.it));
 
-            var positionToClass = Enumerable.Range(0, tickets.First().Count)
-                .Select(index => input.Classes.Where(klass => rotated[index].All(value => klass.Validate(value))).ToList())
+            var positionToClass = rotated
+                .Select(values => input.Classes.Where(klass => values.All(value => klass.Validate(value))).ToList())
                 .ToArray();
 
-            var changed = true;
-            while (changed)
-            {
-                changed = false;
-                for (var i = 0; i < positionToClass.Length; ++i)
+            var (resolved, _) = Produce.Forever((
+                resolved: new Day16Class[input.Tickets[0].Count], 
+                unresolved: positionToClass.Select((it, index) => (it, index))), 
+                state =>
                 {
-                    if (positionToClass[i].Count == 1)
+                    var groups = state.unresolved
+                        .GroupBy(ptc => ptc.it.Count == 1).ToDictionary(g => g.Key, g => g.ToList());
+                    var unresolved = groups.TryGetValue(false, out var value)
+                        ? value
+                        : new List<(List<Day16Class> it, int index)>();
+                    foreach (var ruleset in groups[true])
                     {
-                        var good = positionToClass[i][0];
-                        for (var j = 0; j < positionToClass.Length; ++j)
+                        var rule = ruleset.it.First();
+                        state.resolved[ruleset.index] = rule;
+                        foreach (var otherruleset in unresolved)
                         {
-                            if (i != j)
-                            {
-                                changed = changed || positionToClass[j].Remove(good);
-                            }
+                            otherruleset.it.Remove(rule);
                         }
-
-                        // if (changed) break;
                     }
-                }
-            }
 
-            foreach (var rules in positionToClass)
-            {
-                rules.Should().HaveCount(1);
-            }
+                    return (state.resolved, unresolved);
+                })
+                .First(state => !state.unresolved.Any());
 
-            return positionToClass.Select(it => it.Single());
+            resolved.Should().NotContainNulls();
+
+            return resolved;
         }
 
         private static Day16Input ConvertInput(string input)

@@ -82,24 +82,14 @@ nearby tickets:
                 .Where(ticket => ticket.All(value => input.Classes.Any(klass => klass.Validate(value))))
                 .ToList();
 
-            var positionToClass = Enumerable.Repeat(input.Classes, tickets.First().Count)
-                .Select(it => it.ToList())
-                .ToArray();
+            var rotated = tickets
+                .SelectMany(ticket => ticket.Select((it,index)=>(it,index)))
+                .GroupBy(it => it.index)
+                .ToDictionary(it => it.Key, it => it.Select(z => z.it));
 
-            foreach (var ticket in tickets)
-            {
-                for (var i = 0; i < ticket.Count; ++i)
-                {
-                    var value = ticket[i];
-                    foreach (var rule in positionToClass[i].ToList())
-                    {
-                        if (!rule.Validate(value))
-                        {
-                            positionToClass[i].Remove(rule);
-                        }
-                    }
-                }
-            }
+            var positionToClass = Enumerable.Range(0, tickets.First().Count)
+                .Select(index => input.Classes.Where(klass => rotated[index].All(value => klass.Validate(value))).ToList())
+                .ToArray();
 
             var changed = true;
             while (changed)
@@ -118,7 +108,7 @@ nearby tickets:
                             }
                         }
 
-                        if (changed) break;
+                        // if (changed) break;
                     }
                 }
             }

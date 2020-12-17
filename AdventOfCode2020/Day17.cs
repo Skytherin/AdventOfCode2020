@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using AdventOfCode2020.Utils;
@@ -36,17 +35,17 @@ namespace AdventOfCode2020
             timer.Total();
         }
 
-        private static long Run(DictionaryWithDefault<MultiDimensionalPosition, CubeState> initialState)
+        private static long Run(HashSet<MultiDimensionalPosition> initialState)
         {
             // Visualize(initialState);
             return Produce.Iterate(initialState, 6, current =>
                 {
-                    var next = new DictionaryWithDefault<MultiDimensionalPosition, CubeState>(CubeState.Inactive);
+                    var next = new HashSet<MultiDimensionalPosition>();
                     var adjacentCounts = new DictionaryWithDefault<MultiDimensionalPosition, int>(0);
 
                     // Look at all active cells and all cells adjacent to active cells
                     var cells = new HashSet<MultiDimensionalPosition>();
-                    foreach (var (position, _) in current)
+                    foreach (var position in current)
                     {
                         cells.Add(position);
                         foreach (var pos2 in position.Adjacents())
@@ -58,74 +57,36 @@ namespace AdventOfCode2020
 
                     foreach (var position in cells)
                     {
-                        var value = current[position];
-                        if (value == CubeState.Active && adjacentCounts[position].IsInRange(2, 3))
+                        var active = current.Contains(position);
+                        if (active && adjacentCounts[position].IsInRange(2, 3))
                         {
-                            next[position] = CubeState.Active;
+                            next.Add(position);
                         }
-                        else if (value == CubeState.Inactive && adjacentCounts[position] == 3)
+                        else if (!active && adjacentCounts[position] == 3)
                         {
-                            next[position] = CubeState.Active;
+                            next.Add(position);
                         }
                     }
 
                     // Visualize(next);
                     return next;
                 })
-                .Count(kv => kv.Value == CubeState.Active);
+                .Count;
         }
 
-        private static void Visualize(DictionaryWithDefault<MultiDimensionalPosition, CubeState> next)
+        private static HashSet<MultiDimensionalPosition> ConvertInput(string input, int dimensionality)
         {
-            if (!next.Any()) return;
-            Console.WriteLine();
-            Console.WriteLine("===================");
-            var cells = next.ToList();
-            for (var z = cells.Min(it => it.Key.Positions[2]);
-                z <= cells.Max(it => it.Key.Positions[2]);
-                z++)
-            {
-                Console.WriteLine();
-                for (var y = cells.Min(it => it.Key.Positions[1]);
-                    y <= cells.Max(it => it.Key.Positions[1]);
-                    y++)
-                {
-                    var s = "";
-                    for (var x = cells.Min(it => it.Key.Positions[0]);
-                        x <= cells.Max(it => it.Key.Positions[0]);
-                        x++)
-                    {
-                        s += next[new MultiDimensionalPosition(x, y, z)] switch
-                        {
-                            CubeState.Active => "#",
-                            _ => "."
-                        };
-                    }
-                    Console.WriteLine(s);
-                }
-            }
-        }
-
-        private static DictionaryWithDefault<MultiDimensionalPosition, CubeState> ConvertInput(string input, int dimensionality)
-        {
-            var result = new DictionaryWithDefault<MultiDimensionalPosition, CubeState>(CubeState.Inactive);
+            var result = new HashSet<MultiDimensionalPosition>();
             foreach (var (line,row) in input.SplitIntoLines().Select((line, row) => (line, row)))
             {
                 foreach (var (c,col) in line.Select((c, col) => (c, col)))
                 {
-                    if (c == '#')
-                        result[new MultiDimensionalPosition(col, row).SetDimensionality(dimensionality)] =
-                            CubeState.Active;
+                    if (c == '#') 
+                        result.Add(new MultiDimensionalPosition(col, row).SetDimensionality(dimensionality));
                 }
             }
 
             return result;
-        }
-
-        public enum CubeState
-        {
-            Active,
-            Inactive
         }
     }
 }

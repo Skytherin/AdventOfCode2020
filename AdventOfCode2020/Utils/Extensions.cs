@@ -107,7 +107,7 @@ namespace AdventOfCode2020.Utils
 
         public static int HashWith(this int self, int other)
         {
-            return ((self << 16) + (self >> 16)) ^ other;
+            return ((self << 16) + (self >> 16)) + other;
         }
     }
 }

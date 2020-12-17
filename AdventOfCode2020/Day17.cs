@@ -246,18 +246,13 @@ namespace AdventOfCode2020
             while (true)
             {
                 var i = 0;
-                while (i < ns.Length)
+                ns[i] += 1;
+                while (ns[i] >= 2)
                 {
+                    ns[i] = -1;
+                    i += 1;
+                    if (i >= ns.Length) yield break;
                     ns[i] += 1;
-                    if (ns[i] == 2)
-                    {
-                        ns[i] = -1;
-                        i += 1;
-                        if (i >= ns.Length) yield break;
-                        continue;
-                    }
-
-                    break;
                 }
                 if (ns.All(n => n == 0)) continue;
                 yield return new PositionNd(Positions.Zip(ns).Select(it => it.First + it.Second).ToArray());

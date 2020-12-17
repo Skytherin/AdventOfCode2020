@@ -43,6 +43,7 @@ namespace AdventOfCode2020
             return Produce.Iterate(initialState, 6, current =>
                 {
                     var next = new DictionaryWithDefault<PositionNd, CubeState>(CubeState.Inactive);
+                    var adjacentCounts = new DictionaryWithDefault<PositionNd, int>(0);
 
                     // Look at all active cells and all cells adjacent to active cells
                     var cells = new HashSet<PositionNd>();
@@ -50,19 +51,20 @@ namespace AdventOfCode2020
                     {
                         cells.Add(position);
                         cells.UnionWith(position.Adjacents());
+                        foreach (var pos2 in position.Adjacents())
+                        {
+                            adjacentCounts[pos2] += 1;
+                        }
                     }
 
                     foreach (var position in cells)
                     {
                         var value = current[position];
-                        var adjacentActive =
-                            position.Adjacents().Where(adjacent => current[adjacent] == CubeState.Active)
-                                .Take(4).Count();
-                        if (value == CubeState.Active && adjacentActive.IsInRange(2, 3))
+                        if (value == CubeState.Active && adjacentCounts[position].IsInRange(2, 3))
                         {
                             next[position] = CubeState.Active;
                         }
-                        else if (value == CubeState.Inactive && adjacentActive == 3)
+                        else if (value == CubeState.Inactive && adjacentCounts[position] == 3)
                         {
                             next[position] = CubeState.Active;
                         }

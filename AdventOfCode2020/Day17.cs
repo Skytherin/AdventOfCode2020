@@ -46,7 +46,7 @@ namespace AdventOfCode2020
 
                     // Look at all active cells and all cells adjacent to active cells
                     var cells = new HashSet<MultiDimensionalPosition>();
-                    foreach (var (position, _) in current.Where(kv => kv.Value == CubeState.Active))
+                    foreach (var (position, _) in current)
                     {
                         cells.Add(position);
                         foreach (var pos2 in position.Adjacents())
@@ -113,13 +113,9 @@ namespace AdventOfCode2020
             {
                 foreach (var (c,col) in line.Select((c, col) => (c, col)))
                 {
-                    result[new MultiDimensionalPosition(col, row).SetDimensionality(dimensionality)] = 
-                        c switch
-                        {
-                            '#' => CubeState.Active,
-                            '.' => CubeState.Inactive,
-                            _ => throw new ApplicationException()
-                        };
+                    if (c == '#')
+                        result[new MultiDimensionalPosition(col, row).SetDimensionality(dimensionality)] =
+                            CubeState.Active;
                 }
             }
 

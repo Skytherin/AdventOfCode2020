@@ -15,7 +15,7 @@ namespace AdventOfCode2020.Utils
 
         public override int GetHashCode()
         {
-            return (X << 16) + (X >> 16) + Y;
+            return X.HashWith(Y);
         }
 
         public override bool Equals(object? obj)

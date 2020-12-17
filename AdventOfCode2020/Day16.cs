@@ -87,7 +87,7 @@ nearby tickets:
                 .Select(it => it.Select(z => z.it));
 
             var positionToClass = rotated
-                .Select(values => input.Classes.Where(klass => values.All(value => klass.Validate(value))).ToList())
+                .Select(values => input.Classes.Where(klass => values.All(value => klass.Validate(value))).ToHashSet())
                 .ToArray();
 
             var (resolved, _) = Produce.Forever((
@@ -99,7 +99,7 @@ nearby tickets:
                         .GroupBy(ptc => ptc.it.Count == 1).ToDictionary(g => g.Key, g => g.ToList());
                     var unresolved = groups.TryGetValue(false, out var value)
                         ? value
-                        : new List<(List<Day16Class> it, int index)>();
+                        : new List<(HashSet<Day16Class> it, int index)>();
                     foreach (var ruleset in groups[true])
                     {
                         var rule = ruleset.it.First();

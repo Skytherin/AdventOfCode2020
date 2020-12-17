@@ -104,5 +104,10 @@ namespace AdventOfCode2020.Utils
         {
             while (self.MoveNext()) yield return self.Current;
         }
+
+        public static int HashWith(this int self, int other)
+        {
+            return ((self << 16) + (self >> 16)) ^ other;
+        }
     }
 }

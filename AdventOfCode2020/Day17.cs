@@ -37,10 +37,8 @@ namespace AdventOfCode2020
 
         private static long Run(HashSet<MultiDimensionalPosition> initialState)
         {
-            // Visualize(initialState);
             return Produce.Iterate(initialState, 6, current =>
                 {
-                    var next = new HashSet<MultiDimensionalPosition>();
                     var adjacentCounts = new DictionaryWithDefault<MultiDimensionalPosition, int>(0);
 
                     // Look at all active cells and all cells adjacent to active cells
@@ -55,20 +53,13 @@ namespace AdventOfCode2020
                         }
                     }
 
-                    foreach (var position in cells)
+                    var next = cells.Where(position =>
                     {
                         var active = current.Contains(position);
-                        if (active && adjacentCounts[position].IsInRange(2, 3))
-                        {
-                            next.Add(position);
-                        }
-                        else if (!active && adjacentCounts[position] == 3)
-                        {
-                            next.Add(position);
-                        }
-                    }
+                        return (active && adjacentCounts[position].IsInRange(2, 3)) ||
+                               (!active && adjacentCounts[position] == 3);
+                    }).ToHashSet();
 
-                    // Visualize(next);
                     return next;
                 })
                 .Count;

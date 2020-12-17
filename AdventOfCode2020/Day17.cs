@@ -56,8 +56,9 @@ namespace AdventOfCode2020
                     {
                         var value = current[position];
                         var adjacentActive =
-                            position.Adjacents().Count(adjacent => current[adjacent] == CubeState.Active);
-                        if (value == CubeState.Active && (adjacentActive == 2 || adjacentActive == 3))
+                            position.Adjacents().Where(adjacent => current[adjacent] == CubeState.Active)
+                                .Take(4).Count();
+                        if (value == CubeState.Active && adjacentActive.IsInRange(2, 3))
                         {
                             next[position] = CubeState.Active;
                         }

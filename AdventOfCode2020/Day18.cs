@@ -84,13 +84,16 @@ namespace AdventOfCode2020
                 var count = 1;
                 var subTerm = new Queue<MathToken>();
 
-                while (true)
+                while (count > 0)
                 {
                     var next = line.Dequeue();
-                    if (next.Operator == ')' && count == 1) break;
-                    subTerm.Enqueue(next);
-                    if (next.Operator == ')') count--;
-                    if (next.Operator == '(') count++;
+                    count = next.Operator switch
+                    {
+                        '(' => count + 1,
+                        ')' => count - 1,
+                        _ => count
+                    };
+                    if (count > 0) subTerm.Enqueue(next);
                 }
                 return Expression(subTerm);
             }

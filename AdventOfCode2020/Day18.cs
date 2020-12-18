@@ -61,15 +61,12 @@ namespace AdventOfCode2020
             {
                 var op = line.Dequeue();
                 var second = Term(line);
-                if (op.Operator == '+')
+                first = op.Operator switch
                 {
-                    first += second;
-                }
-                else if (op.Operator == '*')
-                {
-                    first *= second;
-                }
-                else throw new ApplicationException();
+                    '+' => first + second,
+                    '*' => first * second,
+                    _ => throw new ApplicationException()
+                };
             }
 
             return first;
@@ -86,6 +83,7 @@ namespace AdventOfCode2020
             {
                 var count = 1;
                 var subTerm = new Queue<MathToken>();
+
                 while (true)
                 {
                     var next = line.Dequeue();

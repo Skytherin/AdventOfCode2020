@@ -46,6 +46,13 @@ namespace AdventOfCode2020.Utils
             {
                 property.SetValue(result, value.First());
             }
+            else if (property.PropertyType == typeof(char?))
+            {
+                if (value.Length > 0)
+                {
+                    property.SetValue(result, value.First());
+                }
+            }
             else
             {
                 throw new NotImplementedException("");

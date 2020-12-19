@@ -8,55 +8,96 @@ namespace AdventOfCode2020.Utils
 {
     public static class RegexUtils
     {
-        public static T Deserialize<T>(string input, string pattern) where T : new()
+        public static T Deserialize<T>(string input, string pattern)
         {
             var match = Regex.Match(input, pattern);
             return MatchToObject<T>(match);
         }
 
-        public static List<T> DeserializeMany<T>(string input, string pattern) where T: new()
+        public static T Deserialize<T>(string input, string pattern, T template)
+        {
+            var match = Regex.Match(input, pattern);
+            return MatchToObject<T>(match);
+        }
+
+        public static List<T> DeserializeMany<T>(string input, string pattern)
         {
             var matches = Regex.Matches(input, pattern);
             return matches.Select(match => MatchToObject<T>(match)).ToList();
         }
 
-        public static void TypesafeSet<T>(this PropertyInfo property, T result, string value)
+        public static void TypesafeSet<T>(this PropertyInfo prop, T instance, string value)
         {
-            if (property.PropertyType == typeof(string))
+            TypesafeSet(prop.PropertyType, value, write => prop.SetValue(instance, write));
+        }
+
+        public static void TypesafeSet<T>(this FieldInfo field, T instance, string value)
+        {
+            TypesafeSet(field.FieldType, value, write => field.SetValue(instance, write));
+        }
+
+        public static void TypesafeSet(Type type, string value, Action<object> setValue)
+        {
+            if (TryConvert(type, value, out var actual))
             {
-                property.SetValue(result, value);
+                setValue(actual);
             }
-            else if (property.PropertyType == typeof(int?))
+        }
+
+        public static bool TryConvert(Type type, string value, out object actual)
+        {
+            actual = value;
+
+            if (type == typeof(string))
             {
-                if (!string.IsNullOrWhiteSpace(value)) property.SetValue(result, Convert.ToInt32(value));
+                return true;
             }
-            else if (property.PropertyType == typeof(int))
+            if (type == typeof(int?))
             {
-                property.SetValue(result, Convert.ToInt32(value));
+                if (!string.IsNullOrWhiteSpace(value))
+                {
+                    actual = Convert.ToInt32(value);
+                    return true;
+                }
+
+                return false;
             }
-            else if (property.PropertyType == typeof(long?))
+            if (type == typeof(int))
             {
-                if (!string.IsNullOrWhiteSpace(value)) property.SetValue(result, Convert.ToInt64(value));
+                actual = Convert.ToInt32(value);
+                return true;
             }
-            else if (property.PropertyType == typeof(long))
+            if (type == typeof(long?))
             {
-                property.SetValue(result, Convert.ToInt64(value));
+                if (!string.IsNullOrWhiteSpace(value))
+                {
+                    actual = Convert.ToInt64(value);
+                    return true;
+                }
+
+                return false;
             }
-            else if (property.PropertyType == typeof(char))
+            if (type == typeof(long))
             {
-                property.SetValue(result, value.First());
+                actual = Convert.ToInt64(value);
+                return true;
             }
-            else if (property.PropertyType == typeof(char?))
+            if (type == typeof(char))
+            {
+                actual = value.First();
+                return true;
+            }
+            if (type == typeof(char?))
             {
                 if (value.Length > 0)
                 {
-                    property.SetValue(result, value.First());
+                    actual = value.First();
+                    return true;
                 }
+
+                return false;
             }
-            else
-            {
-                throw new NotImplementedException("");
-            }
+            throw new NotImplementedException("");
         }
 
         public static List<string> RxSplit(this string input, string pattern)
@@ -74,23 +115,55 @@ namespace AdventOfCode2020.Utils
             return input.Split("\n").Select(it => it.Trim()).ToList();
         }
 
-        private static T MatchToObject<T>(Match match) where T : new()
+        private static T MatchToObject<T>(Match match)
         {
             if (!match.Success) throw new ApplicationException();
 
             var type = typeof(T);
-            var result = new T();
-            var properties = type.GetProperties().Where(prop => prop.SetMethod != null).ToList();
 
-            var requiredProperties = properties.Where(prop =>
+            var ctors = type.GetConstructors();
+            var noParameterCtor = ctors.SingleOrDefault(ctor => ctor.GetParameters().Length == 0);
+            if (noParameterCtor != null)
             {
-                var propertyType = prop.PropertyType;
-                if (propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(Nullable<>))
-                {
-                    return false;
-                }
+                return MatchObjectFromProperties<T>(noParameterCtor.Invoke(new object[] { }), match);
+            }
 
-                if (prop.GetCustomAttribute<RxOptional>() != null)
+            var ctor = ctors.First();
+
+            var parameters = ctor.GetParameters();
+            var actuals = new List<object>();
+
+            foreach (var parameter in parameters)
+            {
+                var value = match.Groups[parameter.Name ?? throw new ApplicationException()].Value;
+                if (TryConvert(parameter.ParameterType, value, out var actual))
+                {
+                    actuals.Add(actual);
+                }
+                else
+                {
+                    throw new ApplicationException();
+                }
+            }
+
+            return (T)ctor.Invoke(actuals.ToArray());
+        }
+
+        private static T MatchObjectFromProperties<T>(object instance, Match match) 
+        {
+            var type = typeof(T);
+            var members = new List<MemberInfo>();
+            members.AddRange(type.GetProperties().Where(prop => prop.SetMethod != null));
+            members.AddRange(type.GetFields().Where(field => !field.IsInitOnly));
+            if (!members.Any())
+            {
+                throw new ApplicationException();
+            }
+
+            var requiredProperties = members.Where(prop =>
+            {
+                var propertyType = prop.DeclaringType ?? throw new ApplicationException();
+                if (propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(Nullable<>))
                 {
                     return false;
                 }
@@ -100,11 +173,21 @@ namespace AdventOfCode2020.Utils
 
             foreach (var namedGroup in match.Groups.Keys)
             {
-                var prop = properties.SingleOrDefault(p => p.Name == namedGroup);
-                if (prop == null) continue;
+                var member = members.SingleOrDefault(p => p.Name == namedGroup);
+                if (member == null) continue;
                 var value = match.Groups[namedGroup].Value;
-                prop.TypesafeSet(result, value);
-                requiredProperties.Remove(prop);
+                switch (member)
+                {
+                    case PropertyInfo prop:
+                        prop.TypesafeSet(instance, value);
+                        break;
+                    case FieldInfo field:
+                        field.TypesafeSet(instance, value);
+                        break;
+                    default:
+                        throw new ApplicationException();
+                }
+                requiredProperties.Remove(member);
             }
 
             if (requiredProperties.Any())
@@ -112,12 +195,7 @@ namespace AdventOfCode2020.Utils
                 throw new ApplicationException("Required properties missing");
             }
 
-            return result;
+            return (T)instance;
         }
-    }
-
-    public class RxOptional: Attribute
-    {
-
     }
 }

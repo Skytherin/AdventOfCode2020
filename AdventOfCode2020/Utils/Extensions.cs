@@ -23,7 +23,7 @@ namespace AdventOfCode2020.Utils
             }
         }
 
-        public static void Append<TKey, TValue>(this Dictionary<TKey, List<TValue>> d, TKey key, TValue value)
+        public static void Add<TKey, TValue>(this Dictionary<TKey, List<TValue>> d, TKey key, TValue value)
             where TKey: notnull
         {
             if (d.ContainsKey(key))
@@ -34,6 +34,40 @@ namespace AdventOfCode2020.Utils
             {
                 d[key] = new List<TValue> {value};
             }
+        }
+
+        public static void AddMany<TKey, TValue>(this Dictionary<TKey, List<TValue>> d, TKey key, IEnumerable<TValue> values)
+            where TKey : notnull
+        {
+            if (!d.ContainsKey(key))
+            {
+                d[key] = new List<TValue>();
+            }
+            d[key].AddRange(values);
+        }
+
+        public static void Add<TKey, TValue>(this Dictionary<TKey, HashSet<TValue>> d, TKey key, TValue value)
+            where TKey : notnull
+        {
+            if (d.ContainsKey(key))
+            {
+                d[key].Add(value);
+            }
+            else
+            {
+                d[key] = new HashSet<TValue> { value };
+            }
+        }
+
+        public static void AddMany<TKey, TValue>(this Dictionary<TKey, HashSet<TValue>> d, TKey key, IEnumerable<TValue> values)
+            where TKey : notnull
+        {
+            if (!d.ContainsKey(key))
+            {
+                d[key] = new HashSet<TValue>();
+            }
+
+            d[key].UnionWith(values);
         }
 
         public static T Shift<T>(this List<T> self)

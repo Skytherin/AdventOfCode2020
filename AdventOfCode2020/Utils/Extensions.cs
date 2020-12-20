@@ -81,6 +81,17 @@ namespace AdventOfCode2020.Utils
             throw new ApplicationException("Attempt to shift empty list.");
         }
 
+        public static T Pop<T>(this List<T> self)
+        {
+            if (self.Any())
+            {
+                var result = self.Last();
+                self.RemoveAt(self.Count-1);
+                return result;
+            }
+            throw new ApplicationException("Attempt to shift empty list.");
+        }
+
         public static IEnumerable<Tuple<T, T>> Pairs<T>(this IEnumerable<T> input)
         {
             using var enumerator = input.GetEnumerator();

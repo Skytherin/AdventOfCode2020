@@ -296,7 +296,7 @@ aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba");
             return $"({result.Select(v => $"{v}").Join("|")})";
         }
 
-        private static void CreateRule(Day19Input input, int name, string rules)
+        public static void CreateRule(Day19Input input, int name, string rules)
         {
             var result = new List<List<int>>();
             var variants = rules.Split("|")
@@ -309,8 +309,8 @@ aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba");
                 if (Regex.IsMatch(item, @"""[ab]"""))
                 {
                     input.Lexes[name] = item[1];
+                    return;
                 }
-                return;
             }
             
             foreach (var variant in variants)
@@ -330,7 +330,7 @@ aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba");
             input.Rules[name] = result;
         }
 
-        private static Day19Input ConvertInput(string input)
+        public static Day19Input ConvertInput(string input)
         {
             var result = new Day19Input();
 

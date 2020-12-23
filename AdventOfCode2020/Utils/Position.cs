@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace AdventOfCode2020.Utils
 {
     public class Position
     {
+        public static Position Zero = new Position(0, 0);
         public int X { get; }
         public int Y { get; }
 
@@ -32,5 +34,18 @@ namespace AdventOfCode2020.Utils
         {
             return Math.Abs(X) + Math.Abs(Y);
         }
+
+        public IEnumerable<Position> Orthogonal()
+        {
+            yield return North;
+            yield return South;
+            yield return East;
+            yield return West;
+        }
+
+        public Position North => this + Vector.North;
+        public Position South => this + Vector.South;
+        public Position East => this + Vector.East;
+        public Position West => this + Vector.West;
     }
 }

@@ -103,6 +103,7 @@ aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba");
             //Run(sample4).Should().Be(3);
             Run(sample5).Should().Be(4);
             Run2(sample4).Should().Be(12);
+            timer.Lap();
             Run2(input).Should().Be(350);
 
             timer.Lap();

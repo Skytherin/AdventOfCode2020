@@ -33,15 +33,15 @@ F11");
 
         private static long Part1(List<Instruction> instructions)
         {
-            return instructions.Aggregate(new {Position = new Position(0, 0), Vector = East},
+            return instructions.Aggregate(new {Position = new Position(0, 0), Vector = Vector.East},
                 (previous, instruction) =>
                 {
                     return instruction.Action switch
                     {
-                        'N' => new {Position = previous.Position + North * instruction.Value, previous.Vector},
-                        'E' => new {Position = previous.Position + East * instruction.Value, previous.Vector},
-                        'S' => new {Position = previous.Position + South * instruction.Value, previous.Vector},
-                        'W' => new {Position = previous.Position + West * instruction.Value, previous.Vector},
+                        'N' => new {Position = previous.Position + Vector.North * instruction.Value, previous.Vector},
+                        'E' => new {Position = previous.Position + Vector.East * instruction.Value, previous.Vector},
+                        'S' => new {Position = previous.Position + Vector.South * instruction.Value, previous.Vector},
+                        'W' => new {Position = previous.Position + Vector.West * instruction.Value, previous.Vector},
                         'L' => new {previous.Position, Vector = RotateVector(previous.Vector, 360 - instruction.Value)},
                         'R' => new {previous.Position, Vector = RotateVector(previous.Vector, instruction.Value)},
                         'F' => new {Position = previous.Position + previous.Vector * instruction.Value, previous.Vector},
@@ -58,10 +58,10 @@ F11");
                     {
                         return instruction.Action switch
                         {
-                            'N' => new { previous.Position, Vector = previous.Vector + North * instruction.Value },
-                            'E' => new { previous.Position, Vector = previous.Vector + East * instruction.Value },
-                            'S' => new { previous.Position, Vector = previous.Vector + South * instruction.Value },
-                            'W' => new { previous.Position, Vector = previous.Vector + West * instruction.Value },
+                            'N' => new { previous.Position, Vector = previous.Vector + Vector.North * instruction.Value },
+                            'E' => new { previous.Position, Vector = previous.Vector + Vector.East * instruction.Value },
+                            'S' => new { previous.Position, Vector = previous.Vector + Vector.South * instruction.Value },
+                            'W' => new { previous.Position, Vector = previous.Vector + Vector.West * instruction.Value },
                             'L' => new { previous.Position, Vector = RotateVector(previous.Vector, 360 - instruction.Value) },
                             'R' => new { previous.Position, Vector = RotateVector(previous.Vector, instruction.Value) },
                             'F' => new { Position = previous.Position + previous.Vector * instruction.Value, previous.Vector },
@@ -72,10 +72,7 @@ F11");
         }
 
 
-        static readonly Vector North = new Vector(0, 1);
-        static readonly Vector East = new Vector(1, 0);
-        static readonly Vector South = new Vector(0, -1);
-        static readonly Vector West = new Vector(-1, 0);
+        
 
         public static Vector RotateVector(Vector vector, int degreesRight)
         {

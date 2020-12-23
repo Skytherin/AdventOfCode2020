@@ -36,6 +36,19 @@ namespace AdventOfCode2020.Utils
             }
         }
 
+        public static void AddRange<TKey, TValue>(this Dictionary<TKey, List<TValue>> d, TKey key, IEnumerable<TValue> value)
+            where TKey : notnull
+        {
+            if (d.ContainsKey(key))
+            {
+                d[key].AddRange(value);
+            }
+            else
+            {
+                d[key] = value.ToList();
+            }
+        }
+
         public static void AddMany<TKey, TValue>(this Dictionary<TKey, List<TValue>> d, TKey key, IEnumerable<TValue> values)
             where TKey : notnull
         {
@@ -152,7 +165,14 @@ namespace AdventOfCode2020.Utils
 
         public static int HashWith(this int self, int other)
         {
-            return ((self << 16) + (self >> 16)) + other;
+            return HashCode.Combine(self, other);
+        }
+
+        public static List<List<string>> SplitIntoParagraphs(this string self)
+        {
+            return self.SplitOnBlankLines()
+                .Select(it => it.SplitIntoLines())
+                .ToList();
         }
     }
 }

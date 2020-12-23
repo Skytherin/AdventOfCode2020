@@ -107,12 +107,17 @@ namespace AdventOfCode2020.Utils
 
         public static List<string> SplitOnBlankLines(this string input)
         {
-            return RxSplit(input, @"\s*\n\s*\n\s*");
+            return RxSplit(input, @"\s*\n\s*\n\s*")
+                .Where(it => !string.IsNullOrWhiteSpace(it))
+                .Select(it => it.Trim())
+                .ToList();
         }
 
         public static List<string> SplitIntoLines(this string input)
         {
-            return input.Split("\n").Select(it => it.Trim()).ToList();
+            return input.Split("\n")
+                .Where(it => !string.IsNullOrWhiteSpace(it))
+                .Select(it => it.Trim()).ToList();
         }
 
         private static T MatchToObject<T>(Match match)

@@ -20,10 +20,10 @@ namespace AdventOfCode2020
             Run1(sample.Copy(), 100, 9).Should().Be("67384529");
             Run1(input.Copy(), 100, 9).Should().Be("34952786");
 
-
             timer.Lap();
-
-            Run1(input.Copy(), 1000000, 9);
+            Run2(sample.Copy().AddRange(Enumerable.Range(10, 1_000_000 - 9)), 10_000_000, 1_000_000).Should().Be(149245887792);
+            timer.Lap();
+            Run2(input.Copy().AddRange(Enumerable.Range(10, 1_000_000-9)), 10_000_000, 1_000_000).Should().Be(505334281774);
             timer.Lap();
 
 
@@ -36,24 +36,37 @@ namespace AdventOfCode2020
             return one.Enumerate().Skip(1).Select(it => it.ToString()).Join("");
         }
 
+        private static long Run2(CircularList<int> initialState, int iterations, int numberOfCups)
+        {
+            var one = Run(initialState, iterations, numberOfCups);
+            var n1 = one.Next.Value;
+            var n2 = one.Next.Next.Value;
+            return (long)n1 * (long)n2;
+        }
+
         private static CircularList<int> Run(CircularList<int> initialState, int iterations, int numberOfCups)
         {
-            var final = Produce.Iterate(initialState, iterations, state =>
+            var nodeMap = new Dictionary<int, CircularList<int>>(numberOfCups);
+            foreach (var item in initialState.Walk())
+            {
+                nodeMap[item.Value] = item;
+            }
+            Produce.Iterate(initialState, iterations, state =>
             {
                 var pickedUp = state.Next.Extract(3);
                 var destination = Modthing(state.Value - 1, numberOfCups);
-                while (pickedUp.Find(it => it == destination) != null)
+                while (pickedUp.Value == destination || pickedUp.Next.Value == destination || pickedUp.Next.Next.Value == destination)
                 {
                     destination = Modthing(destination - 1, numberOfCups);
                 }
 
-                var d = state.Find(it => it == destination) ?? throw new ApplicationException();
+                var d = nodeMap[destination];
                 d.Insert(pickedUp);
 
                 return state.Next;
             });
 
-            return final.Find(it => it == 1) ?? throw new ApplicationException();
+            return nodeMap[1];
         }
 
         private static int Modthing(int n, int numberOfCups)

@@ -4,14 +4,13 @@ using System.Linq;
 
 namespace AdventOfCode2020.Utils
 {
-    public class CircularList<T>
+    public class CircularList<T> where T: notnull
     {
         public readonly T Value;
-
         public CircularList<T> Next;
         private CircularList<T> Previous;
 
-        public CircularList(T value)
+        private CircularList(T value)
         {
             Value = value;
             Next = this;
@@ -31,7 +30,7 @@ namespace AdventOfCode2020.Utils
         {
             var newNode = new CircularList<T>(value)
             {
-                Next = this,
+                Next = this, 
                 Previous = Previous
             };
 
@@ -39,39 +38,33 @@ namespace AdventOfCode2020.Utils
             Previous = newNode;
         }
 
-        public IEnumerable<T> ReverseEnumerate()
+        public CircularList<T> AddRange(IEnumerable<T> values)
         {
-            yield return Previous.Value;
-            var current = Previous;
+            foreach (var value in values)
+            {
+                Add(value);
+            }
+
+            return this;
+        }
+
+        public IEnumerable<CircularList<T>> Walk()
+        {
+            yield return this;
+            var current = Next;
             while (current != this)
             {
-                yield return current.Previous.Value;
-                current = current.Previous;
+                yield return current;
+                current = current.Next;
             }
         }
 
         public IEnumerable<T> Enumerate()
         {
-            yield return Value;
-            var current = Next;
-            while (current != this)
+            foreach (var item in Walk())
             {
-                yield return current.Value;
-                current = current.Next;
+                yield return item.Value;
             }
-        }
-
-        public CircularList<T>? Find(Func<T, bool> needle)
-        {
-            if (needle(Value)) return this;
-            var current = Next;
-            while (current != this)
-            {
-                if (needle(current.Value)) return current;
-                current = current.Next;
-            }
-
-            return null;
         }
 
         public CircularList<T> Extract(int n)
@@ -84,7 +77,6 @@ namespace AdventOfCode2020.Utils
                 if (last.Next == this) break;
                 last = last.Next;
             }
-
 
             Previous.Next = last.Next;
             last.Next.Previous = Previous;

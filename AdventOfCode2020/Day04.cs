@@ -28,7 +28,7 @@ hgt:179cm
 hcl:#cfa07d eyr:2025 pid:166559648
 iyr:2011 ecl:brn hgt:59in".Replace("\r\n", "\n").Split("\n\n").Select(it => new Day4Input(it)).ToList();
 
-        private static readonly List<Day4Input> Input = File.ReadAllText("Inputs/Day4.txt").Replace("\r\n", "\n").Split("\n\n").Select(it => new Day4Input(it)).ToList();
+        private static readonly List<Day4Input> Input = File.ReadAllText("Inputs/Day04.txt").Replace("\r\n", "\n").Split("\n\n").Select(it => new Day4Input(it)).ToList();
 
         public static void Run()
         {

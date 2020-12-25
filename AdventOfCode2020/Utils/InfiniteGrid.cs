@@ -78,4 +78,12 @@ namespace AdventOfCode2020.Utils
             Actual.Add(position, value);
         }
     }
+
+    public static class InfiniteGridExtensions
+    {
+        public static T ValueOrDefault<T>(this InfiniteGrid<T> self, Position key)
+        {
+            return self.TryPosition(key, out var value) ? value : default!;
+        }
+    }
 }

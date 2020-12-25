@@ -21,7 +21,7 @@ namespace AdventOfCode2020
 #...##....#
 .#..#...#.#");
 
-        private static readonly Day3Input Input = new Day3Input(File.ReadAllText("Inputs/Day3.txt"));
+        private static readonly Day3Input Input = new Day3Input(File.ReadAllText("Inputs/Day03.txt"));
 
         public static void Run()
         {

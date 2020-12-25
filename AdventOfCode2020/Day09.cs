@@ -9,7 +9,7 @@ namespace AdventOfCode2020
 {
     public class Day09
     {
-        private static readonly long[] Input = ConvertInput(File.ReadAllText("Inputs/Day9.txt"));
+        private static readonly long[] Input = ConvertInput(File.ReadAllText("Inputs/Day09.txt"));
 
         private static readonly long[] Sample = ConvertInput(@"35
 20

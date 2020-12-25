@@ -1,48 +1,58 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Configuration;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Reflection.Metadata.Ecma335;
+using System.Text.RegularExpressions;
 using FluentAssertions;
 using AdventOfCode2020.Utils;
 
 namespace AdventOfCode2020
 {
-    public class Day6
+    public class Day05
     {
-        private static readonly List<List<string>> Input = File.ReadAllText("Inputs/Day6.txt")
-            .SplitOnBlankLines()
-            .Select(group => group.SplitIntoLines())
-            .ToList();
-            
+        private static readonly HashSet<long> Input = File.ReadAllText("Inputs/Day05.txt").Split("\n")
+            .Select(it => RunAlgorithm1(it.Trim())).ToHashSet();
 
         public static void Run()
         {
-            Part1();
-            Part2();
+            RunAlgorithm1("FBFBBFFRLR").Should().Be(357);
+            RunAlgorithm1("BFFFBBFRRR").Should().Be(567);
+            RunAlgorithm1("FFFBBBFRRR").Should().Be(119);
+            RunAlgorithm1("BBFFBBFRLL").Should().Be(820);
+            Part1().Should().Be(987);
+            Part2().Should().Be(603);
         }
 
-        public static void Part1()
+        public static long Part1()
         {
-            MergeAndSum((accum, item) => accum.UnionWith(item))
-                .Should().Be(6335);
+            return Input.Max();
         }
 
-        public static void Part2()
+        public static long Part2()
         {
-            MergeAndSum((accum, item) => accum.IntersectWith(item))
-                .Should().Be(3392);
-        }
+            var max = Input.Max();
+            var min = Input.Min();
 
-        public static long MergeAndSum(Action<HashSet<char>, HashSet<char>> action)
-        {
-            return Input.Sum(group => group
-                .Select(line => line.ToHashSet())
-                .Aggregate((accum, item) =>
+            for (var potential = min + 1; potential < max - 1; potential++)
+            {
+                if (!Input.Contains(potential) &&
+                    Input.Contains(potential - 1) &&
+                    Input.Contains(potential + 1))
                 {
-                    action(accum, item);
-                    return accum;
-                }).Count
-            );
+                    return potential;
+                }
+            }
+
+            throw new ApplicationException();
+        }
+
+        private static long RunAlgorithm1(string input)
+        {
+            return input.Aggregate(0L, (accum, value) => accum * 2 + (value == 'B' || value == 'R' ? 1 : 0));
         }
     }
 }

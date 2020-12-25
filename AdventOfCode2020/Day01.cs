@@ -18,7 +18,7 @@ namespace AdventOfCode2020
         public static IEnumerable<int> Part1()
         {
             Console.WriteLine("=== PART 1 ===");
-            var inputs = File.ReadAllLines("Inputs/Day1.txt").Select(it => Convert.ToInt32(it));
+            var inputs = File.ReadAllLines("Inputs/Day01.txt").Select(it => Convert.ToInt32(it));
             yield return RunAlgorithm1(new []{1721,
                 979,
                 366,
@@ -31,7 +31,7 @@ namespace AdventOfCode2020
         public static IEnumerable<long> Part2()
         {
             Console.WriteLine("=== PART 2 ===");
-            var inputs = File.ReadAllLines("Inputs/Day1.txt").Select(it => Convert.ToInt64(it));
+            var inputs = File.ReadAllLines("Inputs/Day01.txt").Select(it => Convert.ToInt64(it));
             yield return RunAlgorithm2(new long[]{1721,
                 979,
                 366,

@@ -9,7 +9,7 @@ namespace AdventOfCode2020
 {
     public class Day08
     {
-        private static readonly Instruction[] Input = ConvertInput(File.ReadAllText("Inputs/Day8.txt"));
+        private static readonly Instruction[] Input = ConvertInput(File.ReadAllText("Inputs/Day08.txt"));
 
         private static readonly Instruction[] Sample = ConvertInput(@"nop +0
 acc +1

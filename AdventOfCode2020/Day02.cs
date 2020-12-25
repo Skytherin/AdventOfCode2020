@@ -13,7 +13,7 @@ namespace AdventOfCode2020
 1-3 b: cdefg
 2-9 c: ccccccccc".Split("\n").Select(line => StringToInput(line)).ToList();
 
-        private static List<Day2Input> Input = File.ReadAllLines("Inputs/Day2.txt").Select(line => StringToInput(line)).ToList();
+        private static List<Day2Input> Input = File.ReadAllLines("Inputs/Day02.txt").Select(line => StringToInput(line)).ToList();
 
         public static void Run()
         {

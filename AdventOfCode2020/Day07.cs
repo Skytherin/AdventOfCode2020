@@ -8,7 +8,7 @@ namespace AdventOfCode2020
 {
     public class Day07
     {
-        private static readonly List<Bag> Input = ConvertToBags(File.ReadAllText("Inputs/Day7.txt"));
+        private static readonly List<Bag> Input = ConvertToBags(File.ReadAllText("Inputs/Day07.txt"));
 
         public static void Run()
         {

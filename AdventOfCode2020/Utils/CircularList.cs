@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace AdventOfCode2020.Utils
 {
-    public class CircularList<T> where T: notnull
+    public class CircularList<T> : IEnumerable<T> where T: notnull
     {
         public readonly T Value;
         public CircularList<T> Next;
@@ -59,14 +60,6 @@ namespace AdventOfCode2020.Utils
             }
         }
 
-        public IEnumerable<T> Enumerate()
-        {
-            foreach (var item in Walk())
-            {
-                yield return item.Value;
-            }
-        }
-
         public CircularList<T> Extract(int n)
         {
             if (n <= 0) throw new ApplicationException();
@@ -99,7 +92,17 @@ namespace AdventOfCode2020.Utils
 
         public CircularList<T> Copy()
         {
-            return From(Enumerate());
+            return From(this);
+        }
+
+        public IEnumerator<T> GetEnumerator()
+        {
+            return Walk().Select(it => it.Value).GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 }
